@@ -7,6 +7,8 @@
 - 默认使用 `scikit-learn` 的 `HistGradientBoostingRegressor`
 - 预留 `LightGBM` 后端接口，后续可直接在 Kaggle Notebook 切换
 
+比赛题目解读与详细说明见 [docs/store_sales_competition_guide.md](docs/store_sales_competition_guide.md)。
+
 ## 目录结构
 
 ```text
@@ -67,7 +69,7 @@ python3 -m store_sales.cli run \
 
 ## 说明
 
-- 默认验证窗口为训练集最后 `16` 天，和比赛提交窗口一致。
+- 默认本地验证窗口为训练集最后 `16` 天，用于贴近公开 `test.csv` 的日期范围；你可以通过 `--validation-horizon` 自行调整。
 - 训练目标做了 `log1p` 变换，预测后再 `expm1` 还原，并裁剪为非负值。
 - 如果环境里装了 `lightgbm`，可以改成 `--model-type lightgbm`。
 

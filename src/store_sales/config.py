@@ -37,4 +37,3 @@ class PipelineConfig:
     earthquake_date: str = "2016-04-16"
     recent_history_start: str | None = None
     model_params: dict[str, object] = field(default_factory=dict)
-
