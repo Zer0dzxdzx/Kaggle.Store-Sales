@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "store-sales-baseline"
+version = "0.1.0"
+description = "Modular baseline pipeline for Kaggle Store Sales competition."
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "scikit-learn>=1.4",
+]
+
+[project.optional-dependencies]
+lightgbm = ["lightgbm>=4.3"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
