@@ -6,6 +6,7 @@
 - 仓库路径：`/Users/du/Desktop/codex/Store Sales`
 - GitHub 仓库：`https://github.com/Zer0dzxdzx/Kaggle.Store-Sales`
 - 当前目标：围绕 Kaggle `Store Sales - Time Series Forecasting` 比赛，建立可迭代的时序预测工程基线，并逐步提升验证与榜单表现。
+- 结构化实验记录文件：`docs/experiment_log.csv`
 
 ## 记录规则
 
@@ -16,6 +17,8 @@
 - 更新重要文档
 - 完成一次有意义的实验
 - 调整验证方案、特征方案或模型方案
+
+如果需要快速回顾实验版本、分数、结论和下一步，优先查看 `docs/experiment_log.csv`。本文件更适合记录阶段性里程碑和背景说明。
 
 建议每条日志至少包含：
 
