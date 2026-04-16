@@ -108,6 +108,39 @@
 3. 增加多窗口时序验证，避免只盯最后一个窗口。
 4. 继续迭代节假日处理、促销特征与更强模型。
 
+### 2026-04-16
+
+#### 阶段 5：跑通真实数据 baseline
+
+- 使用 `data/raw/` 中的真实 Kaggle 原始数据运行了当前 `HistGradientBoostingRegressor` 基线。
+- 成功生成：
+  - `artifacts/validation_metrics.json`
+  - `artifacts/validation_predictions.csv`
+  - `artifacts/submission.csv`
+- 本次运行使用：
+  - `train_start_date=2015-01-01`
+  - `validation_horizon=16`
+  - `model_type=hist_gbdt`
+  - `random_state=42`
+
+结果：
+
+- 首个真实离线验证分数为 `RMSLE = 0.423002`
+- 验证集行数为 `28,512`
+- 提交文件行数为 `28,512`
+- 预测值最小值为 `0.0`，最大值约为 `13031.17`
+
+结论：
+
+- 当前仓库已经从“工程基线可运行”进入“真实比赛基线已落地”的阶段。
+- 后续所有实验都可以围绕这次真实 baseline 做对照，不需要再从合成数据结果出发。
+
+下一步：
+
+1. 上传 `artifacts/submission.csv`，记录首个 Kaggle 公开榜分数。
+2. 把这次真实 baseline 作为 `experiment_log.csv` 中的主参照版本。
+3. 继续做多窗口验证，或者切换到更强的 `LightGBM` 后端。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：
