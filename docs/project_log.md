@@ -237,6 +237,30 @@
 - 后续项目推进要区分“用户自己主导的判断”和“Codex 辅助提速的工程工作”。
 - 下一步进入阶段 1：读数据表，逐张判断每个 CSV 的业务含义、可用性和泄漏风险。
 
+#### 阶段 10：读数据表
+
+- 新增 `docs/data_tables_reading.md`，逐表记录本地 Kaggle CSV 的业务含义、字段、关键统计、使用方式和泄漏风险。
+- 已核对的表包括：
+  - `train.csv`
+  - `test.csv`
+  - `sample_submission.csv`
+  - `stores.csv`
+  - `oil.csv`
+  - `holidays_events.csv`
+  - `transactions.csv`
+- 关键发现：
+  - `train.csv` 零销量行比例约 `31.30%`
+  - `test.csv` 的 `onpromotion` 均值约 `6.97`，高于训练集均值约 `2.60`
+  - `oil.csv` 有 `43` 个油价缺失，需要插值或填充
+  - `holidays_events.csv` 的 `locale` 需要区分 National / Regional / Local
+  - `transactions.csv` 只到训练集最后一天，不能直接作为未来逐日特征
+
+结论：
+
+- `stores.csv`、合法处理后的 `oil.csv` 和 `holidays_events.csv` 可以对 train/test 直接对齐使用。
+- `transactions.csv` 必须只做历史聚合，否则验证阶段容易泄漏未来真实客流。
+- 下一步进入阶段 2：读 baseline，重点检查当前代码如何实现这些数据表的合并和泄漏控制。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

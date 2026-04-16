@@ -10,6 +10,7 @@
 比赛题目解读与详细说明见 [docs/store_sales_competition_guide.md](docs/store_sales_competition_guide.md)。
 项目执行过程记录见 [docs/project_log.md](docs/project_log.md)。
 学习进程表见 [docs/project_progress_table.md](docs/project_progress_table.md)。
+数据表阅读记录见 [docs/data_tables_reading.md](docs/data_tables_reading.md)。
 结构化实验日志见 [docs/experiment_log.csv](docs/experiment_log.csv)。
 
 ## 目录结构
