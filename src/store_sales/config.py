@@ -10,6 +10,8 @@ class PipelineConfig:
     output_dir: Path
     train_start_date: str | None = "2015-01-01"
     validation_horizon: int = 16
+    validation_windows: int = 1
+    validation_step_days: int | None = None
     model_type: str = "hist_gbdt"
     random_state: int = 42
     sales_lags: tuple[int, ...] = (1, 7, 14, 28)

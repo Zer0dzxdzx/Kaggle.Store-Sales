@@ -143,6 +143,35 @@
 2. 把这次真实 baseline 作为 `experiment_log.csv` 中的主参照版本。
 3. 尝试更稳的季节性/分组特征，或切换到更强的 `LightGBM` 后端。
 
+#### 阶段 6：实现多窗口验证与自动实验日志
+
+- 在 pipeline 中新增多窗口验证能力：
+  - `validation_windows` 控制验证窗口数量
+  - `validation_step_days` 控制相邻窗口间隔
+  - 每个窗口都会输出独立的 `validation_predictions_fold_*.csv`
+  - 汇总输出到 `validation_summary.csv`
+- 在 metrics 中新增多窗口汇总指标：
+  - `validation_rmsle_mean`
+  - `validation_rmsle_std`
+  - `validation_rmsle_min`
+  - `validation_rmsle_max`
+  - 每折起止日期、训练行数、验证行数与预测文件路径
+- 新增 `src/store_sales/experiment_log.py`，支持在 CLI 运行结束后自动追加结构化实验日志。
+- CLI 新增参数：
+  - `--validation-windows`
+  - `--validation-step-days`
+  - `--log-experiment`
+  - `--experiment-name`
+  - `--experiment-log-path`
+  - `--data-snapshot`
+  - `--experiment-conclusion`
+  - `--experiment-next-action`
+
+结论：
+
+- 后续实验可以直接用多窗口均值和标准差判断稳定性，不再只依赖最后一个 holdout。
+- 实验记录可以由命令行自动写入，减少手工记录遗漏。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

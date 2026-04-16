@@ -60,18 +60,26 @@ python3 -m store_sales.cli run \
   --data-dir data/raw \
   --output-dir artifacts \
   --train-start-date 2015-01-01 \
+  --validation-windows 3 \
+  --validation-step-days 16 \
+  --log-experiment \
+  --experiment-name baseline_histgbdt_multi_window_v1 \
   --model-type hist_gbdt
 ```
 
 输出内容：
 
 - `artifacts/validation_metrics.json`
+- `artifacts/validation_summary.csv`
 - `artifacts/validation_predictions.csv`
+- `artifacts/validation_predictions_fold_*.csv`
 - `artifacts/submission.csv`
+- `docs/experiment_log.csv`，仅在使用 `--log-experiment` 或 `--experiment-name` 时自动追加
 
 ## 说明
 
 - 默认本地验证窗口为训练集最后 `16` 天，作为回测起点；你可以通过 `--validation-horizon` 自行调整。
+- 可通过 `--validation-windows` 开启多窗口验证，`--validation-step-days` 控制相邻验证窗口之间的步长。
 - 训练目标做了 `log1p` 变换，预测后再 `expm1` 还原，并裁剪为非负值。
 - 如果环境里装了 `lightgbm`，可以改成 `--model-type lightgbm`。
 
