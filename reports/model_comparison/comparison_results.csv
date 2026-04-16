@@ -1,0 +1,4 @@
+experiment_name,model_type,feature_profile,train_start_date,validation_horizon,validation_windows,validation_step_days,validation_rmsle_mean,validation_rmsle_std,validation_rmsle_min,validation_rmsle_max,output_dir,submission_file,description
+histgbdt_baseline,hist_gbdt,baseline,2015-01-01,16,3,16,0.40160116865282136,0.01712427304583168,0.3810847712432582,0.4230024894076367,artifacts/experiments/histgbdt_baseline,,"Main tree-model baseline with lag, rolling, promotion, holiday, oil, and store features."
+seasonal_naive,seasonal_naive,baseline,2015-01-01,16,3,16,0.45812851533522614,0.05352518926256973,0.4124755584381119,0.5332452842142593,artifacts/experiments/seasonal_naive,,Median of recent weekly sales lags; acts as a time-series benchmark.
+ridge_baseline,ridge,baseline,2015-01-01,16,3,16,2.73413210647162,0.016582619577826595,2.712560882394912,2.7528855680924345,artifacts/experiments/ridge_baseline,,Regularized linear model on the baseline feature set.

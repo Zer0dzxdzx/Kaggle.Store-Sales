@@ -73,7 +73,14 @@ def build_feature_summary(config: PipelineConfig) -> str:
         "cluster",
         "days_since_earthquake",
     ]
-    return "|".join(calendar_features + lag_features + rolling_features + promo_features + exogenous_features)
+    return "|".join(
+        [f"profile={config.feature_profile}"]
+        + calendar_features
+        + lag_features
+        + rolling_features
+        + promo_features
+        + exogenous_features
+    )
 
 
 def build_validation_scheme(config: PipelineConfig) -> str:
@@ -93,9 +100,12 @@ def build_experiment_log_row(
     next_action: str | None = None,
 ) -> dict[str, str]:
     mean_score = f"{outputs.validation_score:.6f}"
-    default_conclusion = (
-        f"validation_rmsle_mean={mean_score}; generated submission at {outputs.submission_path}"
-    )
+    if outputs.submission_path is None:
+        default_conclusion = f"validation_rmsle_mean={mean_score}; validation-only run"
+        submission_file = ""
+    else:
+        default_conclusion = f"validation_rmsle_mean={mean_score}; generated submission at {outputs.submission_path}"
+        submission_file = str(outputs.submission_path)
     default_next_action = "compare against Kaggle public score and inspect multi-window stability"
 
     return {
@@ -118,7 +128,7 @@ def build_experiment_log_row(
         "validation_scheme": build_validation_scheme(config),
         "validation_rmsle": mean_score,
         "kaggle_public_score": "",
-        "submission_file": str(outputs.submission_path),
+        "submission_file": submission_file,
         "conclusion": conclusion or default_conclusion,
         "next_action": next_action or default_next_action,
     }

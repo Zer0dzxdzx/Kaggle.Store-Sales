@@ -195,6 +195,32 @@
 - EDA 报告用于解释当前模型误差来源和指导下一轮特征工程。
 - 下一步应结合验证误差分组，进一步检查哪些 family/store 是 public score 偏高的主要来源。
 
+#### 阶段 8：明确简历级项目交付目标
+
+- 项目目标从“跑出一份提交”升级为“可跑、可复现、可迭代、可讲述”的完整项目。
+- 新增特征工程 profile：
+  - `compact`
+  - `baseline`
+  - `extended`
+- 新增模型类型：
+  - `seasonal_naive`
+  - `ridge`
+  - `hist_gbdt`
+  - `lightgbm`
+- 新增 `compare` 命令，用于批量运行模型/特征方案并生成 `reports/model_comparison/`。
+- 新增 `docs/resume_project_summary.md`，沉淀可写进简历和面试讲述的项目总结。
+- 已完成第一版三模型三窗口对比：
+  - `histgbdt_baseline`：mean RMSLE `0.401601`，std `0.017124`
+  - `seasonal_naive`：mean RMSLE `0.458129`，std `0.053525`
+  - `ridge_baseline`：mean RMSLE `2.734132`，std `0.016583`
+
+结论：
+
+- 后续所有优化必须通过多窗口验证和实验日志记录，不能只看单次提交分数。
+- 树模型相对 seasonal lag benchmark 明显更好，但 Kaggle public score 仍高于本地验证，需要优先处理验证-public mismatch。
+- `ridge_baseline` 在当前序数编码特征下效果很差，暂时只作为负向对照，不作为提交候选。
+- 下一步应做按 `family`、`store_nbr`、零销量比例分组的误差分析，再决定是否启用 `extended` 特征方案。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

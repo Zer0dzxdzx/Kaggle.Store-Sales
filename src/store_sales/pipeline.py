@@ -23,7 +23,7 @@ class PipelineOutputs:
     validation_score: float
     validation_path: Path
     metrics_path: Path
-    submission_path: Path
+    submission_path: Path | None
     validation_summary_path: Path
     validation_fold_scores: list[dict[str, object]]
 
@@ -256,26 +256,29 @@ def run_pipeline(config: PipelineConfig) -> PipelineOutputs:
             "validation_windows": config.validation_windows,
             "validation_step_days": config.validation_step_days or config.validation_horizon,
             "model_type": config.model_type,
+            "feature_profile": config.feature_profile,
             "train_rows": int(latest_fold["train_rows"]),
             "validation_rows": int(latest_fold["validation_rows"]),
             "folds": fold_scores,
         },
     )
 
-    final_model = fit_training_pipeline(train, data, config)
-    submission_predictions = recursive_forecast(
-        model_bundle=final_model,
-        history=train,
-        future=data.test,
-        data=data,
-        config=config,
-    )
+    submission_path: Path | None = None
+    if config.make_submission:
+        final_model = fit_training_pipeline(train, data, config)
+        submission_predictions = recursive_forecast(
+            model_bundle=final_model,
+            history=train,
+            future=data.test,
+            data=data,
+            config=config,
+        )
 
-    submission_path = config.output_dir / "submission.csv"
-    submission_predictions[["id", "sales_pred"]].rename(columns={"sales_pred": "sales"}).to_csv(
-        submission_path,
-        index=False,
-    )
+        submission_path = config.output_dir / "submission.csv"
+        submission_predictions[["id", "sales_pred"]].rename(columns={"sales_pred": "sales"}).to_csv(
+            submission_path,
+            index=False,
+        )
 
     return PipelineOutputs(
         validation_score=validation_score,

@@ -62,6 +62,7 @@ python3 -m store_sales.cli run \
   --train-start-date 2015-01-01 \
   --validation-windows 3 \
   --validation-step-days 16 \
+  --feature-profile baseline \
   --log-experiment \
   --experiment-name baseline_histgbdt_multi_window_v1 \
   --model-type hist_gbdt
@@ -82,6 +83,35 @@ python3 -m store_sales.cli run \
 - 可通过 `--validation-windows` 开启多窗口验证，`--validation-step-days` 控制相邻验证窗口之间的步长。
 - 训练目标做了 `log1p` 变换，预测后再 `expm1` 还原，并裁剪为非负值。
 - 如果环境里装了 `lightgbm`，可以改成 `--model-type lightgbm`。
+- 可通过 `--feature-profile compact|baseline|extended` 切换特征工程方案。
+
+## 模型对比
+
+运行多模型验证对比：
+
+```bash
+python3 -m store_sales.cli compare \
+  --data-dir data/raw \
+  --output-dir artifacts/experiments \
+  --report-dir reports/model_comparison \
+  --experiments seasonal_naive ridge_baseline histgbdt_baseline \
+  --validation-windows 3 \
+  --validation-step-days 16
+```
+
+输出内容：
+
+- `reports/model_comparison/comparison_results.csv`
+- `reports/model_comparison/comparison_report.md`
+- `artifacts/experiments/<experiment_name>/validation_summary.csv`
+
+当前已记录的三模型对比结果：
+
+- `histgbdt_baseline`：三窗口 mean RMSLE `0.401601`
+- `seasonal_naive`：三窗口 mean RMSLE `0.458129`
+- `ridge_baseline`：三窗口 mean RMSLE `2.734132`
+
+说明：如果 `--validation-step-days` 小于 `--validation-horizon`，验证窗口会重叠；当前默认 `16/16` 不重叠。`ridge_baseline` 使用当前序数编码特征，主要作为负向对照。
 
 ## EDA
 

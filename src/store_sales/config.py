@@ -13,6 +13,7 @@ class PipelineConfig:
     validation_windows: int = 1
     validation_step_days: int | None = None
     model_type: str = "hist_gbdt"
+    feature_profile: str = "baseline"
     random_state: int = 42
     sales_lags: tuple[int, ...] = (1, 7, 14, 28)
     sales_windows: tuple[int, ...] = (7, 14, 28, 56)
@@ -38,4 +39,5 @@ class PipelineConfig:
     )
     earthquake_date: str = "2016-04-16"
     recent_history_start: str | None = None
+    make_submission: bool = True
     model_params: dict[str, object] = field(default_factory=dict)

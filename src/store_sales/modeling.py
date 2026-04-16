@@ -5,8 +5,14 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.linear_model import Ridge
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 from store_sales.config import PipelineConfig
+
+MIN_LOG1P_PREDICTION = -20.0
+MAX_LOG1P_PREDICTION = 20.0
 
 
 class ModelingError(RuntimeError):
@@ -41,10 +47,36 @@ class ModelBundle:
     model_type: str
 
     def predict(self, frame: pd.DataFrame) -> np.ndarray:
+        # All model backends are trained to predict log1p(sales); convert back once here.
         transformed = self.encoder.transform(frame[self.feature_columns])
         predictions = self.model.predict(transformed)
+        predictions = np.nan_to_num(
+            predictions,
+            nan=0.0,
+            posinf=MAX_LOG1P_PREDICTION,
+            neginf=MIN_LOG1P_PREDICTION,
+        )
+        predictions = np.clip(predictions, MIN_LOG1P_PREDICTION, MAX_LOG1P_PREDICTION)
         predictions = np.expm1(predictions)
         return np.clip(predictions, 0.0, None)
+
+
+@dataclass(slots=True)
+class SeasonalNaiveRegressor:
+    lag_columns: tuple[str, ...] = ("sales_lag_7", "sales_lag_14", "sales_lag_28", "sales_lag_1")
+
+    def fit(self, X: pd.DataFrame, y: np.ndarray, sample_weight: np.ndarray | None = None) -> "SeasonalNaiveRegressor":
+        return self
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        available_lags = [column for column in self.lag_columns if column in X.columns]
+        if not available_lags:
+            return np.zeros(len(X), dtype=float)
+
+        candidates = X[available_lags]
+        raw_predictions = candidates.median(axis=1, skipna=True).fillna(0.0)
+        raw_predictions = np.clip(raw_predictions.to_numpy(dtype=float), 0.0, None)
+        return np.log1p(raw_predictions)
 
 
 def select_feature_columns(frame: pd.DataFrame, config: PipelineConfig) -> list[str]:
@@ -69,6 +101,28 @@ def fit_model(train_frame: pd.DataFrame, config: PipelineConfig) -> ModelBundle:
     X_train = encoder.transform(train_frame[feature_columns])
     y_train = np.log1p(train_frame["sales"].to_numpy(dtype=float))
     sample_weight = build_sample_weights(train_frame["date"])
+
+    if config.model_type == "seasonal_naive":
+        model = SeasonalNaiveRegressor()
+        model.fit(X_train, y_train, sample_weight=sample_weight)
+        return ModelBundle(
+            model=model,
+            encoder=encoder,
+            feature_columns=feature_columns,
+            model_type=config.model_type,
+        )
+
+    if config.model_type == "ridge":
+        params = {"alpha": 1.0}
+        params.update(config.model_params)
+        model = make_pipeline(StandardScaler(), Ridge(**params))
+        model.fit(X_train, y_train, ridge__sample_weight=sample_weight)
+        return ModelBundle(
+            model=model,
+            encoder=encoder,
+            feature_columns=feature_columns,
+            model_type=config.model_type,
+        )
 
     if config.model_type == "hist_gbdt":
         params = {
