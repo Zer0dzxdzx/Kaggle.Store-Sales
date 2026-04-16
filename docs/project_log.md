@@ -266,6 +266,28 @@
 - 已把 `merge`、数据泄漏、`transactions` 使用边界、测试期 `onpromotion` 分布差异补充到 `docs/data_tables_reading.md`。
 - 后续进入代码阅读前，必须先能解释为什么 `stores.csv` 可以直接 merge，而 `transactions.csv` 不能直接按未来日期 merge。
 
+#### 阶段 11：读 baseline
+
+- 新增 `docs/baseline_reading.md`，按执行链路阅读当前 baseline。
+- 阅读范围包括：
+  - `src/store_sales/cli.py`
+  - `src/store_sales/config.py`
+  - `src/store_sales/data.py`
+  - `src/store_sales/features.py`
+  - `src/store_sales/modeling.py`
+  - `src/store_sales/pipeline.py`
+- 重点记录：
+  - 原始 CSV 如何读入
+  - `stores/oil/holidays/transactions` 如何 merge 或历史聚合
+  - lag 和 rolling 特征如何避免使用当天真实 sales
+  - 多窗口时间验证如何切分
+  - `recursive_forecast()` 如何模拟真实 16 天预测
+
+结论：
+
+- 当前 baseline 的主要防泄漏点是：transactions 只基于 `train_history` 聚合；sales lag 使用 `shift`；验证和提交都用递归预测。
+- 下一步进入阶段 3：EDA 解读，把已有图表转成你自己的建模假设。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：
