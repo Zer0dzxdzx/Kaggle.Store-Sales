@@ -1,0 +1,11 @@
+type,locale,event_count
+Holiday,Local,133
+Event,National,56
+Holiday,National,52
+Additional,National,40
+Holiday,Regional,24
+Additional,Local,11
+Transfer,National,8
+Bridge,National,5
+Work Day,National,5
+Transfer,Local,4

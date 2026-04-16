@@ -83,6 +83,23 @@ python3 -m store_sales.cli run \
 - 训练目标做了 `log1p` 变换，预测后再 `expm1` 还原，并裁剪为非负值。
 - 如果环境里装了 `lightgbm`，可以改成 `--model-type lightgbm`。
 
+## EDA
+
+生成可视化分析报告：
+
+```bash
+PYTHONPATH=src python3 -m store_sales.eda \
+  --data-dir data/raw \
+  --output-dir reports/eda \
+  --validation-summary artifacts/validation_summary.csv
+```
+
+输出内容：
+
+- `reports/eda/eda_report.md`
+- `reports/eda/figures/*.png`
+- `reports/eda/tables/*.csv`
+
 ## 下一步建议
 
 当前版本是工程化基线，适合作为后续迭代起点。你下一步可以继续加：

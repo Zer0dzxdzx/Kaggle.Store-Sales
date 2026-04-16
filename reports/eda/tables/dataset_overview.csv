@@ -1,0 +1,14 @@
+metric,value
+train_rows,3000888
+test_rows,28512
+train_start,2013-01-01
+train_end,2017-08-15
+test_start,2017-08-16
+test_end,2017-08-31
+store_count,54
+family_count,33
+total_sales,1073645056.0
+mean_sales_per_row,357.7757873535156
+zero_sales_rate,0.3129506999261552
+mean_onpromotion,2.6027702466736513
+transactions_rows,83488
