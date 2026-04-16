@@ -21,6 +21,108 @@
 | `holidays_events.csv` | 350 | 2012-03-02 到 2017-12-26 | `date + locale + locale_name + description` | 测试期可对齐 | 节假日与事件特征 |
 | `transactions.csv` | 83,488 | 2013-01-01 到 2017-08-15 | `date + store_nbr` | 未来未知 | 历史门店客流代理特征 |
 
+## 核心概念补充
+
+### 什么是 merge
+
+`merge` 是按共同字段把两张表拼起来，类似 Excel 的 `VLOOKUP` 或数据库里的 `JOIN`。
+
+主表 `train.csv` 和 `test.csv` 只有：
+
+- `date`
+- `store_nbr`
+- `family`
+- `sales`，仅 train 有
+- `onpromotion`
+
+但门店城市、门店类型、油价、节假日等信息在其他表里。模型无法自动知道这些信息，必须把它们按 key 合并到主表上，才能作为特征使用。
+
+例如 `stores.csv` 可以按 `store_nbr` merge：
+
+| date | store_nbr | family | sales |
+| --- | ---: | --- | ---: |
+| 2017-08-01 | 1 | BEVERAGES | 1000 |
+
+`stores.csv` 中：
+
+| store_nbr | city | state | type | cluster |
+| ---: | --- | --- | --- | ---: |
+| 1 | Quito | Pichincha | D | 13 |
+
+merge 后：
+
+| date | store_nbr | family | sales | city | state | type | cluster |
+| --- | ---: | --- | ---: | --- | --- | --- | ---: |
+| 2017-08-01 | 1 | BEVERAGES | 1000 | Quito | Pichincha | D | 13 |
+
+这样模型才能学习不同城市、不同门店类型、不同 cluster 的销售模式差异。
+
+### 哪些表适合怎么 merge
+
+| 表 | merge key | 是否可直接 merge | 原因 |
+| --- | --- | --- | --- |
+| `stores.csv` | `store_nbr` | 可以 | 门店静态信息，预测未来时已知 |
+| `oil.csv` | `date` | 可以，但要处理缺失和滚动方向 | 油价覆盖测试期，是外生变量 |
+| `holidays_events.csv` | National 按 `date`，Regional 按 `date + state`，Local 按 `date + city` | 可以，但不能粗暴处理 | 节假日未来已知，但影响范围不同 |
+| `transactions.csv` | 不能直接按未来 `date + store_nbr` merge | 不可以直接 merge | 未来真实交易量未知，直接 merge 会泄漏 |
+
+### 什么是数据泄漏
+
+数据泄漏是指：训练或验证时使用了真实预测场景中不可能提前知道的信息。
+
+泄漏会导致：
+
+- 本地验证分数虚高
+- Kaggle 提交分数明显变差
+- 实验结论不可信
+
+在 Store Sales 中，合法信息和泄漏信息的边界如下：
+
+| 场景 | 合法信息 | 泄漏信息 |
+| --- | --- | --- |
+| 预测 2017-08-16 sales | 日期、星期、门店信息、测试集 `onpromotion`、历史 sales、已知节假日、已知油价 | 2017-08-16 真实 sales、2017-08-16 真实 transactions |
+| 验证 2017-07-31 sales | 2017-07-30 及以前的数据 | 2017-07-31 当天真实 sales 或真实 transactions |
+
+泄漏的本质不是“这个字段有没有用”，而是“预测当下是否已经知道这个字段”。越接近目标结果的字段，越容易造成泄漏。
+
+### 为什么 transactions 最容易泄漏
+
+`transactions.csv` 记录的是某门店某天真实交易次数。它和销售额高度相关，因此很有预测价值。
+
+问题在于，真实预测未来时无法提前知道未来当天的交易次数。
+
+错误用法：
+
+```text
+2017-08-16 真实 transactions -> 预测 2017-08-16 sales
+```
+
+这是泄漏，因为真实提交时没有 2017-08-16 的真实 transactions。
+
+正确用法：
+
+```text
+用 2017-08-15 及以前的 transactions，计算门店历史均值、星期均值、月份均值，再用于预测 2017-08-16。
+```
+
+也就是说，transactions 可以用，但只能以历史聚合形式使用。
+
+### 测试期 onpromotion 更高意味着什么
+
+本地数据统计显示：
+
+- 训练期 `onpromotion` 均值约 `2.60`
+- 测试期 `onpromotion` 均值约 `6.97`
+
+这说明测试期促销强度明显高于训练期平均水平。
+
+可能影响：
+
+- 模型必须学好 `onpromotion` 和 `sales` 的关系。
+- 如果训练集中高促销样本不足，模型可能无法稳定预测测试期高促销场景。
+- 不同 family 对促销的响应可能不同，因此后续应分析 `family + onpromotion` 的交互。
+- 这是一种 train-test distribution shift，需要在误差分析中重点检查高促销样本。
+
 ## 逐表阅读
 
 ### `train.csv`
@@ -160,6 +262,7 @@
 泄漏风险：
 
 - 基本无泄漏风险，因为是静态门店信息。
+- 它可以直接 merge 到 train/test，因为预测未来时已经知道每家门店的城市、州、类型和 cluster。
 
 ### `oil.csv`
 
@@ -276,6 +379,7 @@
 - 高。
 - 验证时如果把验证日期当天的真实 transactions merge 进去，就等于使用未来真实客流量。
 - 正确做法是每个验证 fold 只能使用该 fold 训练截止日期之前的 transactions。
+- 需要记住：不是 transactions 不能用，而是不能使用预测日期当天或之后的真实 transactions。
 
 ## 阶段 1 结论
 
@@ -291,7 +395,10 @@
 ## 你需要自己复述的问题
 
 1. `train.csv` 和 `test.csv` 的区别是什么？
-2. 为什么 `stores.csv` 可以直接 merge？
-3. 为什么 `holidays_events.csv` 不能只做一个简单的 `is_holiday`？
-4. 为什么 `transactions.csv` 是最容易泄漏的表？
-5. 测试期 `onpromotion` 均值比训练期高，这可能对模型有什么影响？
+2. merge 是为了什么？请用 `stores.csv` 举例。
+3. 为什么 `stores.csv` 可以直接 merge？
+4. 为什么 `holidays_events.csv` 不能只做一个简单的 `is_holiday`？
+5. 什么是数据泄漏？为什么它会让本地验证分数不可信？
+6. 为什么 `transactions.csv` 是最容易泄漏的表？
+7. 为什么 `transactions.csv` 不能直接按日期 merge 到验证集或测试集？
+8. 测试期 `onpromotion` 均值比训练期高，这可能对模型有什么影响？

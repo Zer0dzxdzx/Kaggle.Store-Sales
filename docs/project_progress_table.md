@@ -59,6 +59,17 @@
 | 合法未来特征 | `date`、日历特征、`store_nbr`、`family`、门店静态信息、测试集中的 `onpromotion`、测试期可对齐的节假日和油价。 |
 | 高风险泄漏特征 | 测试期或验证期真实 `sales`、真实 `transactions`、任何用未来目标聚合出来的统计量。 |
 
+### 阶段 1 概念补充
+
+阶段 1 的核心不是背字段，而是掌握两个概念：
+
+| 概念 | 你应该能说出的版本 |
+| --- | --- |
+| merge | 按共同字段把其他表的信息补到 train/test 主表上，让模型能使用这些信息。例如按 `store_nbr` 把 `stores.csv` 的 `city/state/type/cluster` 合并到每一行销售样本。 |
+| 数据泄漏 | 训练或验证时用了真实预测场景中不可能提前知道的信息。它会让本地验证分数虚高，导致实验结论不可信。 |
+| transactions 风险 | `transactions` 是真实发生后的交易次数，和 sales 高度相关。未来当天真实 transactions 不可提前知道，所以不能直接按日期 merge，只能做历史聚合。 |
+| onpromotion 分布差异 | 测试期 `onpromotion` 均值高于训练期，说明测试期促销更强。后续要检查模型在高促销样本上的误差。 |
+
 ## 下一步
 
 阶段 1 初读已完成，详见 `docs/data_tables_reading.md`。你需要能逐张表判断：

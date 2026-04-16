@@ -261,6 +261,11 @@
 - `transactions.csv` 必须只做历史聚合，否则验证阶段容易泄漏未来真实客流。
 - 下一步进入阶段 2：读 baseline，重点检查当前代码如何实现这些数据表的合并和泄漏控制。
 
+补充说明：
+
+- 已把 `merge`、数据泄漏、`transactions` 使用边界、测试期 `onpromotion` 分布差异补充到 `docs/data_tables_reading.md`。
+- 后续进入代码阅读前，必须先能解释为什么 `stores.csv` 可以直接 merge，而 `transactions.csv` 不能直接按未来日期 merge。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：
