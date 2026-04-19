@@ -13,6 +13,7 @@
 数据表阅读记录见 [docs/data_tables_reading.md](docs/data_tables_reading.md)。
 Baseline 阅读记录见 [docs/baseline_reading.md](docs/baseline_reading.md)。
 EDA 解读记录见 [docs/eda_interpretation.md](docs/eda_interpretation.md)。
+误差分析阅读记录见 [docs/error_analysis_reading.md](docs/error_analysis_reading.md)。
 结构化实验日志见 [docs/experiment_log.csv](docs/experiment_log.csv)。
 
 ## 目录结构
@@ -133,6 +134,27 @@ PYTHONPATH=src python3 -m store_sales.eda \
 - `reports/eda/eda_report.md`
 - `reports/eda/figures/*.png`
 - `reports/eda/tables/*.csv`
+
+## 误差分析
+
+生成 family、store、promotion bin 和 fold 误差分析：
+
+```bash
+PYTHONPATH=src python3 -m store_sales.error_analysis \
+  --data-dir data/raw \
+  --artifacts-dir artifacts \
+  --output-dir reports/error_analysis
+```
+
+输出内容：
+
+- `reports/error_analysis/error_analysis_report.md`
+- `reports/error_analysis/tables/family_error.csv`
+- `reports/error_analysis/tables/store_error.csv`
+- `reports/error_analysis/tables/promotion_bin_error.csv`
+- `reports/error_analysis/tables/fold_comparison.csv`
+
+说明：family、store、promotion bin 表是跨 validation folds 的汇总；fold comparison 只做验证窗口级别对比。
 
 ## 下一步建议
 

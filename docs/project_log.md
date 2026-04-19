@@ -315,6 +315,22 @@
 - fold 3 变差优先怀疑时间漂移，但也可能来自促销、节假日、family/store 分布变化。
 - 下一步先做误差分析，而不是直接尝试 `extended` lag；先定位错误来源，再决定特征实验。
 
+#### 阶段 13：误差分析
+
+- 新增 `src/store_sales/error_analysis.py`，用于生成阶段 4 的分组误差分析。
+- 新增 `docs/error_analysis_reading.md`，记录阶段 4 的目标、输入、输出和需要判断的问题。
+- 当前误差分析范围限定为：
+  - family error
+  - store error
+  - promotion bin error
+  - fold comparison
+
+结论：
+
+- 阶段 4 的目标是定位错误来源，不直接调参。
+- 当前 family、store、promotion bin 是跨 validation folds 的汇总结果，fold comparison 只做 fold 级趋势判断。
+- 先通过这四张表确认第一层错误方向，再决定是否继续做 fold 3 的交叉误差分析或特征实验。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：
