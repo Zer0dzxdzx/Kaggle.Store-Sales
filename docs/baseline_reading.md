@@ -367,3 +367,24 @@ python3 -m store_sales.cli compare \
 4. 训练时为什么 lag 特征要用 `shift(1)`？
 5. `recursive_forecast()` 为什么每预测完一天要把预测值写回 `sales_history`？
 6. 为什么模型训练目标用 `log1p(sales)`？
+
+## 阶段 2 学习问答
+
+这部分记录你已经能复述的 baseline 核心问题。后续复习时优先看这一节。
+
+| 问题 | 合格回答 |
+| --- | --- |
+| `data.py` 为什么只做基础读取？ | 为了职责分明。`data.py` 负责读 CSV、转日期、设置 dtype、排序和基础缺失处理；复杂特征放在 `features.py`，方便维护、复用和排查问题。 |
+| `stores.csv` 是怎么 merge 的？ | `stores.csv` 按 `store_nbr` merge 到 train/test。因为每个 `store_nbr` 只有一条静态门店信息，merge 后每条销售样本会多出 `city`、`state`、`store_type`、`cluster`，这些未来预测时已知。 |
+| 如何避免验证期真实 transactions？ | 代码用 `train_history` 控制 transactions 的可见范围。每个验证 fold 只用训练截止日期之前的 transactions 做历史聚合，不会用验证期当天真实 transactions。 |
+| lag 和 shift 是什么？ | lag 是过去某个时间点的值，例如 `sales_lag_1` 是昨天销量。`shift(1)` 是把 sales 往后错开一行，确保预测今天时只能用今天之前的历史 sales。 |
+| 为什么递归预测要写回 `sales_history`？ | 因为测试期没有真实 sales。预测第 2 天时需要第 1 天的 `sales_lag_1`，只能用第 1 天预测值，所以要把每天预测结果写回 `sales_history`，供后续日期继续生成 lag 特征。 |
+| 为什么用 `log1p(sales)`？ | 因为 RMSLE 比较的是 `log(1 + sales)` 的误差。用 `log1p(sales)` 训练更贴近评价指标，也能处理 `sales = 0`；预测后用 `expm1` 还原并裁剪为非负。 |
+
+阶段 2 通过标准：
+
+- 能说清楚 baseline 的代码分层。
+- 能解释 `stores` 为什么可以直接 merge。
+- 能解释 `transactions` 为什么不能直接 merge 到验证期或测试期。
+- 能解释 lag、`shift(1)` 和递归预测的关系。
+- 能解释 `log1p` 和 RMSLE 的关系。

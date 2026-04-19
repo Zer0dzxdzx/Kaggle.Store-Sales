@@ -288,6 +288,25 @@
 - 当前 baseline 的主要防泄漏点是：transactions 只基于 `train_history` 聚合；sales lag 使用 `shift`；验证和提交都用递归预测。
 - 下一步进入阶段 3：EDA 解读，把已有图表转成你自己的建模假设。
 
+补充说明：
+
+- 已把阶段 2 的 6 个学习问题和合格答案整合进 `docs/baseline_reading.md`。
+
+#### 阶段 12：EDA 解读
+
+- 新增 `docs/eda_interpretation.md`，把已有 EDA 图表转成“观察 -> 建模假设 -> 下一步验证”的格式。
+- 当前提炼的核心方向：
+  - 日历周期明显，时间验证和日历特征必须保留
+  - 零销量比例高且 family 差异大
+  - 促销强度和销量相关，且测试期促销更强
+  - 门店 type/cluster 有明显差异
+  - 验证 fold 越靠近测试期 RMSLE 越高
+
+结论：
+
+- 阶段 3 的学习重点不是继续画图，而是把图表变成可验证假设。
+- 下一步进入阶段 4：分组误差分析，优先按 `family`、`store_nbr/cluster`、`onpromotion` 分箱和 fold 对比检查错误来源。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

@@ -12,6 +12,7 @@
 学习进程表见 [docs/project_progress_table.md](docs/project_progress_table.md)。
 数据表阅读记录见 [docs/data_tables_reading.md](docs/data_tables_reading.md)。
 Baseline 阅读记录见 [docs/baseline_reading.md](docs/baseline_reading.md)。
+EDA 解读记录见 [docs/eda_interpretation.md](docs/eda_interpretation.md)。
 结构化实验日志见 [docs/experiment_log.csv](docs/experiment_log.csv)。
 
 ## 目录结构
