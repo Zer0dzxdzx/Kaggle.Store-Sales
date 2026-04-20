@@ -17,7 +17,7 @@
 | 1. 读数据表 | 2026-04-16 | 理解每个 CSV 的业务含义和可用方式 | 判断每张表是目标、静态特征、未来已知特征，还是只能做历史聚合 | 帮忙生成表结构、缺失值、日期范围和样例行 | `docs/data_tables_reading.md` | 初读完成 |
 | 2. 读 baseline | 2026-04-16 | 理解当前 pipeline 如何从原始数据生成 submission | 判断当前 baseline 是否合理、哪里可能泄漏、验证是否贴近比赛 | 解释代码路径和关键函数 | `docs/baseline_reading.md` | 初读完成 |
 | 3. EDA 解读 | 2026-04-19 | 从图表形成建模假设 | 判断哪些发现值得转成特征或实验 | 汇总已有 EDA 图表和统计结果 | `docs/eda_interpretation.md` | 初读完成 |
-| 4. 误差分析 | 2026-04-19 | 找出模型主要错在哪里 | 判断下一步优化方向，而不是盲目调参 | 生成 family/store/promotion/fold 分组误差报告 | `docs/error_analysis_reading.md` 和 `reports/error_analysis/` | 进行中 |
+| 4. 误差分析 | 2026-04-19 | 找出模型主要错在哪里 | 判断下一步优化方向，而不是盲目调参 | 生成 family/store/promotion/fold 分组误差报告并整理说明文档 | `docs/error_analysis_reading.md` 和 `reports/error_analysis/` | 初步完成 |
 | 5. 特征实验 | 待开始 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile 和批量实验 | 实验日志与对比结果 | 待开始 |
 | 6. 项目总结 | 待开始 | 把项目转成简历和面试可讲述内容 | 决定哪些结论真实、哪些不能夸大 | 整理 README 和总结初稿 | 简历项目描述与面试讲述稿 | 待开始 |
 
@@ -109,4 +109,11 @@
 - promotion bin error
 - fold comparison
 
-本阶段先生成表格和报告，再由你判断下一步特征实验方向。
+阶段 4 说明文档已补充，当前结论是：
+
+- family 误差中，低销量和部分高零销量品类值得重点关注。
+- store 误差存在差异，但还不能直接归因到某个 city、state、type 或 cluster。
+- promotion bin 结果显示无促销样本 RMSLE 最高，不能简单认为高促销样本是当前最大问题。
+- fold 3 整体更差，但原因还没有被定位。
+
+下一步应在这些结论中选择一个明确方向进入阶段 5 特征实验。

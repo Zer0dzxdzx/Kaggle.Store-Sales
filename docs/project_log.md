@@ -331,6 +331,12 @@
 - 当前 family、store、promotion bin 是跨 validation folds 的汇总结果，fold comparison 只做 fold 级趋势判断。
 - 先通过这四张表确认第一层错误方向，再决定是否继续做 fold 3 的交叉误差分析或特征实验。
 
+补充说明：
+
+- 已把阶段 4 误差分析扩展成完整说明文档，路径为 `docs/error_analysis_reading.md`。
+- 文档补充了每张表的阅读方法、当前结果解读、不能下的结论和面试讲述版本。
+- 当前阶段 4 的核心发现是：无促销样本 RMSLE 最高，fold 3 整体更差，family 误差更偏向低销量和部分高零销量品类。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：
