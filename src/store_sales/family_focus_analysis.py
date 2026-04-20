@@ -25,8 +25,42 @@ from store_sales.error_analysis import (
 from store_sales.fold3_cross_error import compare_target_fold_to_prior
 
 
+plt.rcParams["font.sans-serif"] = ["PingFang SC", "Arial Unicode MS", "Noto Sans CJK SC", "SimHei", "DejaVu Sans"]
+plt.rcParams["axes.unicode_minus"] = False
+
 DEFAULT_FAMILY = "SCHOOL AND OFFICE SUPPLIES"
 SUPPORTED_TARGET_FOLD = 3
+REPORT_COLUMN_NAMES = {
+    "fold_id": "验证窗口",
+    "row_count": "样本数",
+    "rmsle": "RMSLE",
+    "mean_actual_sales": "真实销量均值",
+    "mean_predicted_sales": "预测销量均值",
+    "mean_signed_error": "平均预测误差",
+    "mean_onpromotion": "促销数量均值",
+    "year": "年份",
+    "month": "月份",
+    "total_sales": "总销量",
+    "promotion_sum": "促销数量合计",
+    "mean_sales": "销量均值",
+    "store_nbr": "门店编号",
+    "city": "城市",
+    "store_type": "门店类型",
+    "cluster": "门店簇",
+    "promotion_bin": "促销分箱",
+    "fold3_row_count": "第 3 窗口样本数",
+    "fold3_rmsle": "第 3 窗口 RMSLE",
+    "prior_rmsle": "前序窗口 RMSLE",
+    "rmsle_delta": "RMSLE 差值",
+    "fold3_error_share": "第 3 窗口误差占比",
+    "fold3_mean_actual_sales": "第 3 窗口真实销量均值",
+    "fold3_mean_predicted_sales": "第 3 窗口预测销量均值",
+    "fold3_mean_onpromotion": "第 3 窗口促销数量均值",
+    "test_row_count": "测试期样本数",
+    "test_mean_onpromotion": "测试期促销数量均值",
+    "test_promotion_sum": "测试期促销数量合计",
+    "has_fold3_error_signal": "是否有第 3 窗口误差信号",
+}
 
 
 @dataclass(slots=True)
@@ -145,6 +179,10 @@ def save_plot(path: Path) -> None:
     plt.tight_layout()
     plt.savefig(path, dpi=150, bbox_inches="tight")
     plt.close()
+
+
+def rename_columns_for_report(frame: pd.DataFrame) -> pd.DataFrame:
+    return frame.rename(columns=REPORT_COLUMN_NAMES)
 
 
 def build_monthly_history(focus_train: pd.DataFrame, paths: FamilyFocusPaths) -> pd.DataFrame:
@@ -312,13 +350,13 @@ def plot_2017_daily(daily: pd.DataFrame, paths: FamilyFocusPaths, family: str) -
     train_part = daily[daily["period"] != "test"].copy()
     fig, ax_sales = plt.subplots(figsize=(14, 6))
     ax_promo = ax_sales.twinx()
-    ax_sales.plot(train_part["date"], train_part["total_sales"], color="#0b7285", linewidth=2, label="Total sales")
-    ax_promo.plot(daily["date"], daily["promotion_sum"], color="#f08c00", linewidth=1.5, label="Promotion sum")
-    ax_sales.axvspan(pd.Timestamp("2017-07-31"), pd.Timestamp("2017-08-15"), color="#ffe066", alpha=0.25, label="Fold 3")
-    ax_sales.axvspan(pd.Timestamp("2017-08-16"), pd.Timestamp("2017-08-31"), color="#d0ebff", alpha=0.25, label="Test")
-    ax_sales.set_title(f"{family}: 2017 Daily Sales and Promotion")
-    ax_sales.set_ylabel("Total sales")
-    ax_promo.set_ylabel("Promotion sum")
+    ax_sales.plot(train_part["date"], train_part["total_sales"], color="#0b7285", linewidth=2, label="总销量")
+    ax_promo.plot(daily["date"], daily["promotion_sum"], color="#f08c00", linewidth=1.5, label="促销数量合计")
+    ax_sales.axvspan(pd.Timestamp("2017-07-31"), pd.Timestamp("2017-08-15"), color="#ffe066", alpha=0.25, label="第 3 验证窗口")
+    ax_sales.axvspan(pd.Timestamp("2017-08-16"), pd.Timestamp("2017-08-31"), color="#d0ebff", alpha=0.25, label="测试期")
+    ax_sales.set_title(f"{family}: 2017 年每日销量与促销")
+    ax_sales.set_ylabel("总销量")
+    ax_promo.set_ylabel("促销数量合计")
     ax_sales.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
     ax_sales.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     ax_sales.legend(loc="upper left")
@@ -331,12 +369,12 @@ def plot_monthly_history(monthly: pd.DataFrame, paths: FamilyFocusPaths, family:
     fig, ax = plt.subplots(figsize=(12, 6))
     for year, frame in monthly.groupby("year", observed=True):
         ax.plot(frame["month"], frame["total_sales"], marker="o", linewidth=1.8, label=str(year))
-    ax.set_title(f"{family}: Monthly Total Sales by Year")
-    ax.set_xlabel("Month")
-    ax.set_ylabel("Total sales")
+    ax.set_title(f"{family}: 按年份对比月度总销量")
+    ax.set_xlabel("月份")
+    ax.set_ylabel("总销量")
     ax.set_xticks(range(1, 13))
     ax.grid(axis="y", alpha=0.25)
-    ax.legend(title="Year", ncols=3)
+    ax.legend(title="年份", ncols=3)
     save_plot(paths.figures_dir / "monthly_sales_by_year.png")
 
 
@@ -344,9 +382,9 @@ def plot_fold3_top_stores(store_error: pd.DataFrame, paths: FamilyFocusPaths, fa
     top = store_error.head(10).sort_values("fold3_rmsle")
     labels = top["store_nbr"].astype(str) + " " + top["city"].astype(str)
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.barh(labels, top["fold3_rmsle"], color="#c92a2a", label="Fold 3")
-    ax.scatter(top["prior_rmsle"], labels, color="#1864ab", label="Prior folds", zorder=3)
-    ax.set_title(f"{family}: Top Fold 3 Store Error")
+    ax.barh(labels, top["fold3_rmsle"], color="#c92a2a", label="第 3 验证窗口")
+    ax.scatter(top["prior_rmsle"], labels, color="#1864ab", label="前序窗口", zorder=3)
+    ax.set_title(f"{family}: 第 3 验证窗口高误差门店")
     ax.set_xlabel("RMSLE")
     ax.legend()
     save_plot(paths.figures_dir / "fold3_top_store_error.png")
@@ -380,6 +418,7 @@ def write_report(
     ].copy()
     fold_display["fold_id"] = fold_display["fold_id"].astype("int64").astype("string")
     fold_display["row_count"] = fold_display["row_count"].astype("int64").astype("string")
+    fold_display = rename_columns_for_report(fold_display)
 
     monthly_display = monthly[monthly["month"].isin([3, 4, 7, 8, 9])][
         ["year", "month", "total_sales", "promotion_sum", "mean_sales", "mean_onpromotion"]
@@ -387,6 +426,7 @@ def write_report(
     monthly_display = monthly_display.copy()
     monthly_display["year"] = monthly_display["year"].astype("int64").astype("string")
     monthly_display["month"] = monthly_display["month"].astype("int64").astype("string")
+    monthly_display = rename_columns_for_report(monthly_display)
     store_columns = [
         "store_nbr",
         "city",
@@ -437,66 +477,73 @@ def write_report(
 
     top_new = new_store_promotion.iloc[0] if not new_store_promotion.empty else None
     top_test_overlap = test_overlap[test_overlap["has_fold3_error_signal"]].head(10)
+    store_display = rename_columns_for_report(store_error[store_columns])
+    store_promotion_display = rename_columns_for_report(store_promotion_error[store_promotion_columns])
+    new_store_promotion_display = rename_columns_for_report(new_store_promotion[new_columns])
+    top_test_overlap_display = rename_columns_for_report(top_test_overlap[test_columns])
+    if "是否有第 3 窗口误差信号" in top_test_overlap_display.columns:
+        top_test_overlap_display["是否有第 3 窗口误差信号"] = top_test_overlap_display["是否有第 3 窗口误差信号"].map(
+            {True: "是", False: "否"}
+        )
 
     lines = [
-        f"# Family Focus Analysis: {family}",
+        f"# 品类单独分析：{family}",
         "",
-        "This report diagnoses one family after fold 3 cross-error analysis. It does not change the model.",
+        "本报告是在第 3 验证窗口交叉误差分析之后，对单个品类做诊断。它只用于定位问题，不改变模型，也不生成新的提交文件。",
         "",
-        "## Key Findings",
+        "## 核心发现",
         "",
-        f"- August 2017 total sales for this family are `{focus_2017_august['total_sales']:.0f}`, much higher than July 2017 and prior August levels.",
-        f"- Fold 3 prediction error is concentrated in high-promotion type A / Quito-Ambato store segments for `{family}`.",
-        f"- Top fold 3 store segment: store `{int(store_error.iloc[0]['store_nbr'])}` in `{store_error.iloc[0]['city']}`.",
-        f"- Test-period promotions continue to be high for type A stores, so this family remains relevant for submission risk.",
+        f"- 2017 年 8 月该品类总销量为 `{focus_2017_august['total_sales']:.0f}`，明显高于 2017 年 7 月和历史 8 月低位。",
+        f"- 第 3 验证窗口误差集中在 `{family}` 的高促销、type A / Quito-Ambato 门店片段。",
+        f"- 第 3 验证窗口误差最高的门店片段是 `{store_error.iloc[0]['city']}` 的门店 `{int(store_error.iloc[0]['store_nbr'])}`。",
+        "- 测试期 type A 门店仍有较高促销，因此这个品类仍然是提交风险点。",
     ]
     if top_new is not None:
         lines.append(
-            f"- Strongest new fold 3 store-promotion segment: store `{int(top_new['store_nbr'])}` "
-            f"with promotion bin `{top_new['promotion_bin']}`, actual mean `{top_new['fold3_mean_actual_sales']:.1f}`, "
-            f"predicted mean `{top_new['fold3_mean_predicted_sales']:.1f}`."
+            f"- 最强第 3 验证窗口新组合是门店 `{int(top_new['store_nbr'])}` + 促销分箱 `{top_new['promotion_bin']}`，"
+            f"真实销量均值 `{top_new['fold3_mean_actual_sales']:.1f}`，预测销量均值 `{top_new['fold3_mean_predicted_sales']:.1f}`。"
         )
 
     lines.extend(
         [
             "",
-            "## Fold Summary",
+            "## 验证窗口汇总",
             "",
             dataframe_to_markdown(fold_display, max_rows=len(fold_display)),
             "",
-            "## Monthly History Snapshot",
+            "## 月度历史快照",
             "",
             dataframe_to_markdown(monthly_display, max_rows=len(monthly_display)),
             "",
-            "## Fold 3 Store Error",
+            "## 第 3 验证窗口门店误差",
             "",
-            dataframe_to_markdown(store_error[store_columns]),
+            dataframe_to_markdown(store_display),
             "",
-            "## Fold 3 Store Promotion Error",
+            "## 第 3 验证窗口门店促销误差",
             "",
-            "This table prioritizes segments that can be compared against prior folds. Fold 3-only high-promotion segments are shown in the next table.",
+            "这张表优先展示能和前序窗口对比的片段。只在第 3 验证窗口出现的高促销组合见下一张表。",
             "",
-            dataframe_to_markdown(store_promotion_error[store_promotion_columns]),
+            dataframe_to_markdown(store_promotion_display),
             "",
-            "## New Fold 3 Store Promotion Segments",
+            "## 第 3 验证窗口新出现的门店促销组合",
             "",
-            "These store-promotion combinations appear in fold 3 but not in prior folds for this family.",
+            "这些门店-促销组合在该品类的第 3 验证窗口中出现，但没有出现在前序窗口中。",
             "",
-            dataframe_to_markdown(new_store_promotion[new_columns]),
+            dataframe_to_markdown(new_store_promotion_display),
             "",
-            "## Test Promotion Risk Overlap",
+            "## 测试期促销风险重叠",
             "",
-            dataframe_to_markdown(top_test_overlap[test_columns], max_rows=10),
+            dataframe_to_markdown(top_test_overlap_display, max_rows=10),
             "",
-            "## Figures",
+            "## 图表",
             "",
-            "![2017 daily sales and promotion](figures/daily_2017_sales_promotion.png)",
+            "![2017 年每日销量与促销](figures/daily_2017_sales_promotion.png)",
             "",
-            "![Monthly sales by year](figures/monthly_sales_by_year.png)",
+            "![按年份对比月度销量](figures/monthly_sales_by_year.png)",
             "",
-            "![Fold 3 top store error](figures/fold3_top_store_error.png)",
+            "![第 3 验证窗口高误差门店](figures/fold3_top_store_error.png)",
             "",
-            "## Generated Tables",
+            "## 生成的表格",
             "",
             "- `tables/monthly_history.csv`",
             "- `tables/daily_2017_focus.csv`",
@@ -506,12 +553,12 @@ def write_report(
             "- `tables/family_fold3_new_store_promotion_segments.csv`",
             "- `tables/test_promotion_risk_overlap.csv`",
             "",
-            "## Interpretation",
+            "## 解释与判断",
             "",
-            "- The evidence supports a targeted issue for this family, not a general low-demand fix.",
-            "- The data shows underprediction in fold 3 high-promotion type A / Quito-Ambato store segments.",
-            "- The next feature experiment should target August timing and promotion behavior for this family; a school-season explanation remains a hypothesis.",
-            "- This report is diagnostic; it does not prove the external business cause of the pattern.",
+            "- 现有证据支持这是该品类的局部问题，不适合继续用泛化低需求特征处理。",
+            "- 第 3 验证窗口中，高促销、type A / Quito-Ambato 门店片段存在明显低估。",
+            "- 下一步特征实验应优先针对该品类的 8 月时间效应和促销响应；“开学季”只能作为待验证假设。",
+            "- 本报告是诊断报告，只能说明数据模式和模型误差集中位置，不能证明外部业务原因。",
         ]
     )
     paths.report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")

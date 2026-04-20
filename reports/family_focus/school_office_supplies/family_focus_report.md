@@ -1,26 +1,26 @@
-# Family Focus Analysis: SCHOOL AND OFFICE SUPPLIES
+# 品类单独分析：SCHOOL AND OFFICE SUPPLIES
 
-This report diagnoses one family after fold 3 cross-error analysis. It does not change the model.
+本报告是在第 3 验证窗口交叉误差分析之后，对单个品类做诊断。它只用于定位问题，不改变模型，也不生成新的提交文件。
 
-## Key Findings
+## 核心发现
 
-- August 2017 total sales for this family are `50169`, much higher than July 2017 and prior August levels.
-- Fold 3 prediction error is concentrated in high-promotion type A / Quito-Ambato store segments for `SCHOOL AND OFFICE SUPPLIES`.
-- Top fold 3 store segment: store `47` in `Quito`.
-- Test-period promotions continue to be high for type A stores, so this family remains relevant for submission risk.
-- Strongest new fold 3 store-promotion segment: store `47` with promotion bin `11-50`, actual mean `538.4`, predicted mean `33.6`.
+- 2017 年 8 月该品类总销量为 `50169`，明显高于 2017 年 7 月和历史 8 月低位。
+- 第 3 验证窗口误差集中在 `SCHOOL AND OFFICE SUPPLIES` 的高促销、type A / Quito-Ambato 门店片段。
+- 第 3 验证窗口误差最高的门店片段是 `Quito` 的门店 `47`。
+- 测试期 type A 门店仍有较高促销，因此这个品类仍然是提交风险点。
+- 最强第 3 验证窗口新组合是门店 `47` + 促销分箱 `11-50`，真实销量均值 `538.4`，预测销量均值 `33.6`。
 
-## Fold Summary
+## 验证窗口汇总
 
-| fold_id | row_count | rmsle | mean_actual_sales | mean_predicted_sales | mean_signed_error | mean_onpromotion |
+| 验证窗口 | 样本数 | RMSLE | 真实销量均值 | 预测销量均值 | 平均预测误差 | 促销数量均值 |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | 864 | 0.434057 | 1.366898 | 1.274311 | -0.092587 | 0.002315 |
 | 2 | 864 | 0.641590 | 7.063657 | 1.332382 | -5.731276 | 0.250000 |
 | 3 | 864 | 0.866511 | 59.947917 | 18.501496 | -41.446421 | 2.297454 |
 
-## Monthly History Snapshot
+## 月度历史快照
 
-| year | month | total_sales | promotion_sum | mean_sales | mean_onpromotion |
+| 年份 | 月份 | 总销量 | 促销数量合计 | 销量均值 | 促销数量均值 |
 | --- | --- | --- | --- | --- | --- |
 | 2013 | 9 | 0.000000 | 0 | 0.000000 | 0.000000 |
 | 2014 | 3 | 2235.000000 | 0 | 1.335125 | 0.000000 |
@@ -43,9 +43,9 @@ This report diagnoses one family after fold 3 cross-error analysis. It does not 
 | 2017 | 7 | 8797.000000 | 290 | 5.255078 | 0.173238 |
 | 2017 | 8 | 50169.000000 | 1913 | 61.937038 | 2.361728 |
 
-## Fold 3 Store Error
+## 第 3 验证窗口门店误差
 
-| store_nbr | city | store_type | cluster | fold3_rmsle | prior_rmsle | rmsle_delta | fold3_mean_actual_sales | fold3_mean_predicted_sales | fold3_mean_onpromotion |
+| 门店编号 | 城市 | 门店类型 | 门店簇 | 第 3 窗口 RMSLE | 前序窗口 RMSLE | RMSLE 差值 | 第 3 窗口真实销量均值 | 第 3 窗口预测销量均值 | 第 3 窗口促销数量均值 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 47 | Quito | A | 14 | 2.735861 | 0.721499 | 2.014362 | 523.437500 | 32.604855 | 12.000000 |
 | 44 | Quito | A | 5 | 2.665396 | 0.591897 | 2.073498 | 393.750000 | 25.889929 | 12.000000 |
@@ -58,11 +58,11 @@ This report diagnoses one family after fold 3 cross-error analysis. It does not 
 | 51 | Guayaquil | A | 17 | 0.847989 | 0.584243 | 0.263745 | 3.875000 | 4.396971 | 0.000000 |
 | 17 | Quito | C | 12 | 0.588754 | 0.235964 | 0.352790 | 11.562500 | 4.956986 | 2.000000 |
 
-## Fold 3 Store Promotion Error
+## 第 3 验证窗口门店促销误差
 
-This table prioritizes segments that can be compared against prior folds. Fold 3-only high-promotion segments are shown in the next table.
+这张表优先展示能和前序窗口对比的片段。只在第 3 验证窗口出现的高促销组合见下一张表。
 
-| store_nbr | city | store_type | promotion_bin | fold3_row_count | fold3_rmsle | prior_rmsle | rmsle_delta | fold3_mean_actual_sales | fold3_mean_predicted_sales |
+| 门店编号 | 城市 | 门店类型 | 促销分箱 | 第 3 窗口样本数 | 第 3 窗口 RMSLE | 前序窗口 RMSLE | RMSLE 差值 | 第 3 窗口真实销量均值 | 第 3 窗口预测销量均值 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 38 | Loja | D | 0 | 16 | 1.244050 | 0.182788 | 1.061263 | 4.937500 | 0.208907 |
 | 9 | Quito | B | 6-10 | 15 | 1.501075 | 0.893248 | 0.607827 | 145.200000 | 31.893541 |
@@ -75,11 +75,11 @@ This table prioritizes segments that can be compared against prior folds. Fold 3
 | 26 | Guayaquil | D | 0 | 16 | 0.505743 | 0.428631 | 0.077112 | 0.812500 | 0.446550 |
 | 31 | Babahoyo | B | 0 | 15 | 0.631314 | 0.568273 | 0.063041 | 1.466667 | 1.639388 |
 
-## New Fold 3 Store Promotion Segments
+## 第 3 验证窗口新出现的门店促销组合
 
-These store-promotion combinations appear in fold 3 but not in prior folds for this family.
+这些门店-促销组合在该品类的第 3 验证窗口中出现，但没有出现在前序窗口中。
 
-| store_nbr | city | store_type | promotion_bin | fold3_row_count | fold3_rmsle | fold3_error_share | fold3_mean_actual_sales | fold3_mean_predicted_sales |
+| 门店编号 | 城市 | 门店类型 | 促销分箱 | 第 3 窗口样本数 | 第 3 窗口 RMSLE | 第 3 窗口误差占比 | 第 3 窗口真实销量均值 | 第 3 窗口预测销量均值 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 47 | Quito | A | 11-50 | 15 | 2.733045 | 0.172712 | 538.400000 | 33.601619 |
 | 44 | Quito | A | 11-50 | 15 | 2.697563 | 0.168257 | 414.200000 | 26.982084 |
@@ -92,30 +92,30 @@ These store-promotion combinations appear in fold 3 but not in prior folds for t
 | 15 | Ibarra | C | 2-5 | 7 | 0.657461 | 0.004664 | 9.857143 | 7.222817 |
 | 11 | Cayambe | B | 6-10 | 9 | 0.509424 | 0.003600 | 27.666667 | 19.293776 |
 
-## Test Promotion Risk Overlap
+## 测试期促销风险重叠
 
-| store_nbr | city | store_type | promotion_bin | test_row_count | test_mean_onpromotion | test_promotion_sum | has_fold3_error_signal | fold3_rmsle | fold3_error_share |
+| 门店编号 | 城市 | 门店类型 | 促销分箱 | 测试期样本数 | 测试期促销数量均值 | 测试期促销数量合计 | 是否有第 3 窗口误差信号 | 第 3 窗口 RMSLE | 第 3 窗口误差占比 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 50 | Ambato | A | 11-50 | 16 | 12.687500 | 203 | True | 2.254764 | 0.117552 |
-| 46 | Quito | A | 11-50 | 16 | 12.687500 | 203 | True | 0.588554 | 0.006942 |
-| 45 | Quito | A | 11-50 | 16 | 12.250000 | 196 | True | 0.896901 | 0.019840 |
-| 44 | Quito | A | 11-50 | 16 | 12.062500 | 193 | True | 2.697563 | 0.168257 |
-| 48 | Quito | A | 11-50 | 16 | 12.062500 | 193 | True | 2.561915 | 0.131526 |
-| 47 | Quito | A | 11-50 | 15 | 12.466667 | 187 | True | 2.733045 | 0.172712 |
-| 49 | Quito | A | 11-50 | 15 | 12.266667 | 184 | True | 0.355467 | 0.002922 |
-| 9 | Quito | B | 6-10 | 15 | 8.133333 | 122 | True | 1.501075 | 0.052100 |
-| 20 | Quito | B | 6-10 | 11 | 8.090909 | 89 | True | 1.243681 | 0.021458 |
-| 11 | Cayambe | B | 6-10 | 11 | 7.818182 | 86 | True | 0.509424 | 0.003600 |
+| 50 | Ambato | A | 11-50 | 16 | 12.687500 | 203 | 是 | 2.254764 | 0.117552 |
+| 46 | Quito | A | 11-50 | 16 | 12.687500 | 203 | 是 | 0.588554 | 0.006942 |
+| 45 | Quito | A | 11-50 | 16 | 12.250000 | 196 | 是 | 0.896901 | 0.019840 |
+| 44 | Quito | A | 11-50 | 16 | 12.062500 | 193 | 是 | 2.697563 | 0.168257 |
+| 48 | Quito | A | 11-50 | 16 | 12.062500 | 193 | 是 | 2.561915 | 0.131526 |
+| 47 | Quito | A | 11-50 | 15 | 12.466667 | 187 | 是 | 2.733045 | 0.172712 |
+| 49 | Quito | A | 11-50 | 15 | 12.266667 | 184 | 是 | 0.355467 | 0.002922 |
+| 9 | Quito | B | 6-10 | 15 | 8.133333 | 122 | 是 | 1.501075 | 0.052100 |
+| 20 | Quito | B | 6-10 | 11 | 8.090909 | 89 | 是 | 1.243681 | 0.021458 |
+| 11 | Cayambe | B | 6-10 | 11 | 7.818182 | 86 | 是 | 0.509424 | 0.003600 |
 
-## Figures
+## 图表
 
-![2017 daily sales and promotion](figures/daily_2017_sales_promotion.png)
+![2017 年每日销量与促销](figures/daily_2017_sales_promotion.png)
 
-![Monthly sales by year](figures/monthly_sales_by_year.png)
+![按年份对比月度销量](figures/monthly_sales_by_year.png)
 
-![Fold 3 top store error](figures/fold3_top_store_error.png)
+![第 3 验证窗口高误差门店](figures/fold3_top_store_error.png)
 
-## Generated Tables
+## 生成的表格
 
 - `tables/monthly_history.csv`
 - `tables/daily_2017_focus.csv`
@@ -125,9 +125,9 @@ These store-promotion combinations appear in fold 3 but not in prior folds for t
 - `tables/family_fold3_new_store_promotion_segments.csv`
 - `tables/test_promotion_risk_overlap.csv`
 
-## Interpretation
+## 解释与判断
 
-- The evidence supports a targeted issue for this family, not a general low-demand fix.
-- The data shows underprediction in fold 3 high-promotion type A / Quito-Ambato store segments.
-- The next feature experiment should target August timing and promotion behavior for this family; a school-season explanation remains a hypothesis.
-- This report is diagnostic; it does not prove the external business cause of the pattern.
+- 现有证据支持这是该品类的局部问题，不适合继续用泛化低需求特征处理。
+- 第 3 验证窗口中，高促销、type A / Quito-Ambato 门店片段存在明显低估。
+- 下一步特征实验应优先针对该品类的 8 月时间效应和促销响应；“开学季”只能作为待验证假设。
+- 本报告是诊断报告，只能说明数据模式和模型误差集中位置，不能证明外部业务原因。
