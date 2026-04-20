@@ -132,8 +132,8 @@ fold 3 变差不是平均分布在所有样本上，而是明显集中在：
 
 - `SCHOOL AND OFFICE SUPPLIES`
 - 高促销 bin `11-50`
-- Quito / Ambato 的大店，尤其 type A 门店
-- fold 3 新出现或 prior folds 很少出现的 `SCHOOL AND OFFICE SUPPLIES + 高促销 + 大店` 组合
+- Quito / Ambato 的相关门店，尤其 type A 门店
+- fold 3 新出现或 prior folds 很少出现的 `SCHOOL AND OFFICE SUPPLIES + 高促销 + type A/Quito-Ambato 门店` 组合
 
 最强线索是：`SCHOOL AND OFFICE SUPPLIES` 在 fold 3 的实际销量明显高于模型预测。例如 store `47` 的该 family 在 fold 3 平均真实销量约 `538.4`，但平均预测只有约 `33.6`。这说明模型在该子集上明显低估；是否属于季节性突增，需要下一步单独检查时间规律。
 
@@ -144,7 +144,7 @@ fold 3 变差不是平均分布在所有样本上，而是明显集中在：
 更合理的下一步是单独分析 `SCHOOL AND OFFICE SUPPLIES`：
 
 - 它是否在 7 月底到 8 月中出现季节性上升？
-- 是否和开学季、节假日或促销计划相关？
+- 是否和 8 月时间效应、节假日或促销计划相关？“开学季”只能作为后续待验证假设。
 - 是否只在 type A / Quito / Ambato 门店爆发？
 - 是否需要针对该 family 做特殊特征，而不是全局低需求特征？
 
@@ -153,3 +153,48 @@ fold 3 变差不是平均分布在所有样本上，而是明显集中在：
 - `reports/fold3_cross_error/fold3_cross_error_report.md`
 - `reports/fold3_cross_error/tables/fold3_family_store_promotion_worsening.csv`
 - `reports/fold3_cross_error/tables/fold3_new_family_store_promotion_segments.csv`
+
+## 单独分析：SCHOOL AND OFFICE SUPPLIES
+
+### 分析目标
+
+fold 3 交叉误差分析已经把最大问题定位到 `SCHOOL AND OFFICE SUPPLIES`。本次单独分析不训练新模型，只回答一个问题：这个 family 的错误到底像不像“低需求问题”，还是更像“特定时间 + 高促销 + type A / Quito-Ambato 门店”的问题。
+
+### 核心发现
+
+| 观察 | 结果 |
+| --- | --- |
+| 2017 年 8 月总销量 | `50169` |
+| 2017 年 7 月总销量 | `8797` |
+| fold 3 mean actual sales | `59.947917` |
+| fold 3 mean predicted sales | `18.501496` |
+| fold 3 RMSLE | `0.866511` |
+| 最强错误门店 | store `47`，Quito，type A |
+| 最强新组合 | store `47` + promotion bin `11-50` |
+| 该组合真实均值 / 预测均值 | `538.4` / `33.6` |
+
+### 判断
+
+这个问题不应该继续当作 broad low-demand 问题处理。
+
+原因：
+
+- 2017 年 8 月该 family 销量明显高于 7 月和历史同期低位。
+- fold 3 的错误主要是低估，而不是把低销量样本预测太高。
+- 高错误集中在 type A 门店、Quito/Ambato 相关门店和 `11-50` 促销 bin。
+- test period 中这些 type A 门店仍有较高促销，因此这个问题会影响最终提交风险。
+
+### 下一步实验方向
+
+下一轮不要继续增强 `low_demand`。更合理的实验方向是窄特征：
+
+1. `SCHOOL AND OFFICE SUPPLIES` 专属的 8 月时间特征；“开学季”只能作为待验证假设，不能直接当作已证明原因。
+2. `SCHOOL AND OFFICE SUPPLIES` 专属的促销响应特征，例如 family-promotion interaction。
+3. type A 门店或 Quito/Ambato 相关门店的 school-supplies 高促销交互特征。
+4. 实验后必须比较 mean RMSLE、fold 3 RMSLE，以及该 family 的 fold 3 store-promotion 错误是否下降。
+
+对应报告：
+
+- `reports/family_focus/school_office_supplies/family_focus_report.md`
+- `reports/family_focus/school_office_supplies/tables/family_fold3_new_store_promotion_segments.csv`
+- `reports/family_focus/school_office_supplies/tables/test_promotion_risk_overlap.csv`

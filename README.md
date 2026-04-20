@@ -175,6 +175,26 @@ PYTHONPATH=src python3 -m store_sales.fold3_cross_error \
 - `reports/fold3_cross_error/tables/fold3_*_worsening.csv`
 - `reports/fold3_cross_error/tables/fold3_new_*_segments.csv`
 
+单独分析 `SCHOOL AND OFFICE SUPPLIES`：
+
+```bash
+PYTHONPATH=src python3 -m store_sales.family_focus_analysis \
+  --data-dir data/raw \
+  --artifacts-dir artifacts \
+  --output-dir reports/family_focus/school_office_supplies \
+  --family "SCHOOL AND OFFICE SUPPLIES" \
+  --target-fold 3 \
+  --min-fold-rows 4
+```
+
+输出内容：
+
+- `reports/family_focus/school_office_supplies/family_focus_report.md`
+- `reports/family_focus/school_office_supplies/tables/*.csv`
+- `reports/family_focus/school_office_supplies/figures/*.png`
+
+说明：该分析只用于定位 `SCHOOL AND OFFICE SUPPLIES` 在 fold 3 的错误来源，不改变模型和提交文件。
+
 ## 下一步建议
 
 当前版本是工程化基线，适合作为后续迭代起点。你下一步可以继续加：

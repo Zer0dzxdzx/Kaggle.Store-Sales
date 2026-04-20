@@ -18,7 +18,7 @@
 | 2. 读 baseline | 2026-04-16 | 理解当前 pipeline 如何从原始数据生成 submission | 判断当前 baseline 是否合理、哪里可能泄漏、验证是否贴近比赛 | 解释代码路径和关键函数 | `docs/baseline_reading.md` | 初读完成 |
 | 3. EDA 解读 | 2026-04-19 | 从图表形成建模假设 | 判断哪些发现值得转成特征或实验 | 汇总已有 EDA 图表和统计结果 | `docs/eda_interpretation.md` | 初读完成 |
 | 4. 误差分析 | 2026-04-19 | 找出模型主要错在哪里 | 判断下一步优化方向，而不是盲目调参 | 生成 family/store/promotion/fold 分组误差报告并整理说明文档 | `docs/error_analysis_reading.md` 和 `reports/error_analysis/` | 初步完成 |
-| 5. 特征实验 | 2026-04-20 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile、跑验证、记录实验日志 | `docs/feature_experiments.md` 和 `docs/experiment_log.csv` | 实验 1 完成 |
+| 5. 特征实验 | 2026-04-20 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile、跑验证、记录实验日志 | `docs/feature_experiments.md` 和 `docs/experiment_log.csv` | 实验 1 完成，单独分析完成 |
 | 6. 项目总结 | 待开始 | 把项目转成简历和面试可讲述内容 | 决定哪些结论真实、哪些不能夸大 | 整理 README 和总结初稿 | 简历项目描述与面试讲述稿 | 待开始 |
 
 ## 阶段 0：读题记录
@@ -132,5 +132,14 @@
 - 最大 family 变差来源是 `SCHOOL AND OFFICE SUPPLIES`。
 - 最大 store 变差来源是 store `47`，Quito，type A。
 - 最大 promotion bin 变差来源是 `11-50`。
-- fold 3 新出现的高误差组合集中在 `SCHOOL AND OFFICE SUPPLIES + 11-50 promotion + 大店`。
+- fold 3 新出现的高误差组合集中在 `SCHOOL AND OFFICE SUPPLIES + 11-50 promotion + type A/Quito-Ambato 门店`。
 - 下一步不应继续 broad low-demand 特征，应单独分析 `SCHOOL AND OFFICE SUPPLIES` 的时间/促销/门店规律。
+
+阶段 5 `SCHOOL AND OFFICE SUPPLIES` 单独分析已完成：
+
+- 2017 年 8 月该 family 总销量为 `50169`，明显高于 2017 年 7 月的 `8797`。
+- fold 3 中该 family 的 mean actual sales 为 `59.947917`，mean predicted sales 为 `18.501496`，主要问题是低估。
+- 最大错误集中在 type A 门店、Quito/Ambato 相关门店和 `11-50` 促销 bin，代表组合是 store `47` + `11-50`。
+- 该组合 fold 3 平均真实销量约 `538.4`，平均预测约 `33.6`。
+- test period 中 type A 门店仍存在高促销，因此这个问题和最终提交风险相关。
+- 下一步特征实验应针对 school-supplies 的 8 月时间/促销/门店交互特征，而不是继续扩展 low-demand 特征；“开学季”只能作为待验证假设。

@@ -384,8 +384,30 @@
 
 结论：
 
-- fold 3 变差的最强诊断线索集中在 `SCHOOL AND OFFICE SUPPLIES`、高促销 bin `11-50` 和大店组合，模型在这些子集上明显低估。
+- fold 3 变差的最强诊断线索集中在 `SCHOOL AND OFFICE SUPPLIES`、高促销 bin `11-50` 和 type A/Quito-Ambato 门店组合，模型在这些子集上明显低估。
 - 这还不能证明具体原因；下一步应单独分析 `SCHOOL AND OFFICE SUPPLIES` 的时间规律、促销规律和门店规律。
+
+#### 阶段 16：SCHOOL AND OFFICE SUPPLIES 单独分析
+
+- 新增 `src/store_sales/family_focus_analysis.py`，用于对单个 family 做时间、促销、门店和 fold 3 错误交叉分析。
+- 生成 `reports/family_focus/school_office_supplies/family_focus_report.md`，以及配套 CSV 表和图表。
+- 本次只做诊断，不改变模型、不生成新提交文件。
+
+结果：
+
+- `SCHOOL AND OFFICE SUPPLIES` 在 2017 年 8 月总销量为 `50169`，明显高于 2017 年 7 月的 `8797`。
+- 该 family fold 3 RMSLE 为 `0.866511`。
+- fold 3 mean actual sales 为 `59.947917`，mean predicted sales 为 `18.501496`。
+- 最强新错误组合是 store `47`，Quito，type A，promotion bin `11-50`，平均真实销量约 `538.4`，平均预测约 `33.6`。
+- test period 中 store `44/47/48/50` 等 type A 门店仍有高促销，因此这个 family 对最终提交存在持续风险。
+
+结论：
+
+- 这不是一个适合继续用 broad low-demand 特征解决的问题。
+- 当前证据更支持“该 family 在 fold 3 的高促销 type A/Quito-Ambato 门店样本被明显低估”。
+- 下一步实验应该做窄特征，例如 school-supplies 的 8 月时间特征、family-promotion interaction、type A 门店交互特征。
+- “开学季”只能作为待验证假设，不能直接写成已证明的外部原因。
+- 外部业务原因仍不能直接下结论；报告只证明数据模式和模型误差集中位置。
 
 ## 日志模板
 
