@@ -73,6 +73,16 @@ def build_feature_summary(config: PipelineConfig) -> str:
         "cluster",
         "days_since_earthquake",
     ]
+    demand_features = []
+    if config.demand_features:
+        demand_features = [
+            "family_mean_sales_hist",
+            "family_zero_rate_hist",
+            "family_is_low_demand",
+            "store_family_mean_sales_hist",
+            "store_family_zero_rate_hist",
+            "store_family_is_low_demand",
+        ]
     return "|".join(
         [f"profile={config.feature_profile}"]
         + calendar_features
@@ -80,6 +90,7 @@ def build_feature_summary(config: PipelineConfig) -> str:
         + rolling_features
         + promo_features
         + exogenous_features
+        + demand_features
     )
 
 

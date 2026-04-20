@@ -122,7 +122,7 @@ def recursive_forecast(
     data: CompetitionData,
     config: PipelineConfig,
 ) -> pd.DataFrame:
-    context = build_feature_context(history, data)
+    context = build_feature_context(history, data, config)
     future_base = build_feature_frame(
         base_frame=future,
         context=context,
@@ -174,7 +174,7 @@ def fit_training_pipeline(
     data: CompetitionData,
     config: PipelineConfig,
 ) -> ModelBundle:
-    context = build_feature_context(history, data)
+    context = build_feature_context(history, data, config)
     train_features = build_feature_frame(
         base_frame=history,
         context=context,

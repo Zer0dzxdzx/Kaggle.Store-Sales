@@ -49,6 +49,13 @@ EXPERIMENT_SPECS: dict[str, ExperimentSpec] = {
         train_start_date="2015-01-01",
         description="Tree model with longer seasonal lags for feature-engineering iteration.",
     ),
+    "histgbdt_low_demand": ExperimentSpec(
+        name="histgbdt_low_demand",
+        model_type="hist_gbdt",
+        feature_profile="low_demand",
+        train_start_date="2015-01-01",
+        description="Tree model with leakage-safe family and store-family low-demand history features.",
+    ),
 }
 
 
@@ -172,6 +179,7 @@ def write_comparison_report(results: pd.DataFrame, report_dir: Path) -> tuple[Pa
             "- `compact`: short lags/windows for quick smoke tests.",
             "- `baseline`: main lag, rolling, promotion, holiday, oil, transaction, and store feature set.",
             "- `extended`: adds longer seasonal lags for feature-engineering iteration.",
+            "- `low_demand`: baseline feature set plus family and store-family low-demand history features.",
         ]
     )
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")

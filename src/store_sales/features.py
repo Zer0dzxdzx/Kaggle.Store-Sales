@@ -20,9 +20,16 @@ class FeatureContext:
     local_holidays: pd.DataFrame
     weekday_transactions: pd.DataFrame | None
     month_transactions: pd.DataFrame | None
+    family_demand: pd.DataFrame | None
+    store_family_demand: pd.DataFrame | None
 
 
-def build_feature_context(train_history: pd.DataFrame, data: CompetitionData) -> FeatureContext:
+def build_feature_context(
+    train_history: pd.DataFrame,
+    data: CompetitionData,
+    config: PipelineConfig,
+) -> FeatureContext:
+    use_demand_features = config.demand_features
     return FeatureContext(
         stores=data.stores.copy(),
         oil_features=prepare_oil_features(data.oil),
@@ -31,6 +38,20 @@ def build_feature_context(train_history: pd.DataFrame, data: CompetitionData) ->
         local_holidays=prepare_holiday_features(data.holidays, locale="Local"),
         weekday_transactions=prepare_transaction_features(train_history, data.transactions, by="weekday"),
         month_transactions=prepare_transaction_features(train_history, data.transactions, by="month"),
+        family_demand=(
+            prepare_static_demand_features(train_history, ["family"], prefix="family")
+            if use_demand_features
+            else None
+        ),
+        store_family_demand=(
+            prepare_static_demand_features(
+                train_history,
+                ["store_nbr", "family"],
+                prefix="store_family",
+            )
+            if use_demand_features
+            else None
+        ),
     )
 
 
@@ -114,6 +135,101 @@ def prepare_transaction_features(
     raise ValueError(f"Unsupported transaction aggregation: {by}")
 
 
+def _add_low_demand_flag(frame: pd.DataFrame, mean_column: str, zero_rate_column: str, flag_column: str) -> pd.DataFrame:
+    enriched = frame.copy()
+    if enriched.empty:
+        enriched[flag_column] = pd.Series(dtype="int8")
+        return enriched
+
+    low_sales_cutoff = enriched[mean_column].quantile(0.25)
+    high_zero_cutoff = max(0.5, float(enriched[zero_rate_column].quantile(0.75)))
+    enriched[flag_column] = (
+        (enriched[mean_column] <= low_sales_cutoff) | (enriched[zero_rate_column] >= high_zero_cutoff)
+    ).astype("int8")
+    return enriched
+
+
+def prepare_static_demand_features(
+    history: pd.DataFrame,
+    group_columns: list[str],
+    prefix: str,
+) -> pd.DataFrame | None:
+    if history.empty:
+        return None
+
+    stats = (
+        history.groupby(group_columns, dropna=False)
+        .agg(
+            demand_sales_sum=("sales", "sum"),
+            demand_row_count=("sales", "size"),
+            demand_zero_count=("sales", lambda values: (values == 0).sum()),
+        )
+        .reset_index()
+    )
+    stats[f"{prefix}_mean_sales_hist"] = stats["demand_sales_sum"] / stats["demand_row_count"].clip(lower=1)
+    stats[f"{prefix}_zero_rate_hist"] = stats["demand_zero_count"] / stats["demand_row_count"].clip(lower=1)
+    stats = stats.rename(columns={"demand_row_count": f"{prefix}_row_count_hist"})
+    stats = _add_low_demand_flag(
+        stats,
+        mean_column=f"{prefix}_mean_sales_hist",
+        zero_rate_column=f"{prefix}_zero_rate_hist",
+        flag_column=f"{prefix}_is_low_demand",
+    )
+    return stats[
+        group_columns
+        + [
+            f"{prefix}_mean_sales_hist",
+            f"{prefix}_zero_rate_hist",
+            f"{prefix}_row_count_hist",
+            f"{prefix}_is_low_demand",
+        ]
+    ]
+
+
+def prepare_training_demand_features(
+    history: pd.DataFrame,
+    group_columns: list[str],
+    prefix: str,
+) -> pd.DataFrame:
+    daily = (
+        history.groupby(group_columns + ["date"], dropna=False)
+        .agg(
+            demand_sales_sum=("sales", "sum"),
+            demand_row_count=("sales", "size"),
+            demand_zero_count=("sales", lambda values: (values == 0).sum()),
+        )
+        .sort_values(group_columns + ["date"])
+        .reset_index()
+    )
+
+    grouped = daily.groupby(group_columns, sort=False)
+    daily["sales_sum_before"] = grouped["demand_sales_sum"].cumsum() - daily["demand_sales_sum"]
+    daily["row_count_before"] = grouped["demand_row_count"].cumsum() - daily["demand_row_count"]
+    daily["zero_count_before"] = grouped["demand_zero_count"].cumsum() - daily["demand_zero_count"]
+
+    denominator = daily["row_count_before"].clip(lower=1)
+    daily[f"{prefix}_mean_sales_hist"] = daily["sales_sum_before"] / denominator
+    daily[f"{prefix}_zero_rate_hist"] = daily["zero_count_before"] / denominator
+    daily[f"{prefix}_row_count_hist"] = daily["row_count_before"]
+
+    daily = _add_low_demand_flag(
+        daily,
+        mean_column=f"{prefix}_mean_sales_hist",
+        zero_rate_column=f"{prefix}_zero_rate_hist",
+        flag_column=f"{prefix}_is_low_demand",
+    )
+    return daily[
+        group_columns
+        + [
+            "date",
+            f"{prefix}_mean_sales_hist",
+            f"{prefix}_zero_rate_hist",
+            f"{prefix}_row_count_hist",
+            f"{prefix}_is_low_demand",
+        ]
+    ]
+
+
 def add_calendar_features(frame: pd.DataFrame, config: PipelineConfig) -> pd.DataFrame:
     enriched = frame.copy()
     enriched["day_of_week"] = enriched["date"].dt.dayofweek.astype("int8")
@@ -168,6 +284,10 @@ def add_known_exogenous_features(frame: pd.DataFrame, context: FeatureContext) -
         enriched = enriched.merge(context.weekday_transactions, on=["store_nbr", "day_of_week"], how="left")
     if context.month_transactions is not None:
         enriched = enriched.merge(context.month_transactions, on=["store_nbr", "month"], how="left")
+    if context.family_demand is not None:
+        enriched = enriched.merge(context.family_demand, on=["family"], how="left")
+    if context.store_family_demand is not None:
+        enriched = enriched.merge(context.store_family_demand, on=["store_nbr", "family"], how="left")
 
     holiday_columns = [
         column
@@ -187,11 +307,33 @@ def add_known_exogenous_features(frame: pd.DataFrame, context: FeatureContext) -
         "oil_mean_28",
         "transactions_weekday_mean",
         "transactions_month_mean",
+        "family_mean_sales_hist",
+        "family_zero_rate_hist",
+        "family_row_count_hist",
+        "family_is_low_demand",
+        "store_family_mean_sales_hist",
+        "store_family_zero_rate_hist",
+        "store_family_row_count_hist",
+        "store_family_is_low_demand",
     ]
     for column in numeric_fill_columns:
         if column in enriched.columns:
             enriched[column] = enriched[column].fillna(0.0)
 
+    return enriched
+
+
+def add_training_demand_features(train_frame: pd.DataFrame) -> pd.DataFrame:
+    enriched = train_frame.copy()
+    family_demand = prepare_training_demand_features(enriched, ["family"], prefix="family")
+    enriched = enriched.merge(family_demand, on=["family", "date"], how="left")
+
+    store_family_demand = prepare_training_demand_features(
+        enriched,
+        ["store_nbr", "family"],
+        prefix="store_family",
+    )
+    enriched = enriched.merge(store_family_demand, on=["store_nbr", "family", "date"], how="left")
     return enriched
 
 
@@ -233,6 +375,21 @@ def build_feature_frame(
 ) -> pd.DataFrame:
     features = add_calendar_features(base_frame, config)
     features = add_known_exogenous_features(features, context)
+    if config.demand_features and include_sales_lags:
+        features = features.drop(
+            columns=[
+                "family_mean_sales_hist",
+                "family_zero_rate_hist",
+                "family_row_count_hist",
+                "family_is_low_demand",
+                "store_family_mean_sales_hist",
+                "store_family_zero_rate_hist",
+                "store_family_row_count_hist",
+                "store_family_is_low_demand",
+            ],
+            errors="ignore",
+        )
+        features = add_training_demand_features(features)
     if include_sales_lags:
         features = add_training_lag_features(features, config)
 
