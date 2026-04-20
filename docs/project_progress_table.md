@@ -125,3 +125,12 @@
 - fold 3 从 `0.423002` 变为 `0.426889`，更差。
 - `SCHOOL AND OFFICE SUPPLIES` RMSLE 从 `0.671040` 变为 `0.712021`，明显恶化。
 - 决策：不把 `low_demand` 作为默认特征方案，保留代码供后续参考。
+
+阶段 5 fold 3 交叉误差分析已完成：
+
+- fold 3 RMSLE `0.423002`，prior folds RMSLE `0.391024`。
+- 最大 family 变差来源是 `SCHOOL AND OFFICE SUPPLIES`。
+- 最大 store 变差来源是 store `47`，Quito，type A。
+- 最大 promotion bin 变差来源是 `11-50`。
+- fold 3 新出现的高误差组合集中在 `SCHOOL AND OFFICE SUPPLIES + 11-50 promotion + 大店`。
+- 下一步不应继续 broad low-demand 特征，应单独分析 `SCHOOL AND OFFICE SUPPLIES` 的时间/促销/门店规律。

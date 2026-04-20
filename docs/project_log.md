@@ -358,6 +358,35 @@
 - 低需求特征对少数 family 有小幅改善，但整体和 fold 3 变差，最关键 family 也变差。
 - 下一步应先做 fold 3 的交叉误差分析，或者单独分析 `SCHOOL AND OFFICE SUPPLIES`，不要继续盲目增强 broad low-demand 特征。
 
+#### 阶段 15：fold 3 交叉误差分析
+
+- 新增 `src/store_sales/fold3_cross_error.py`，用于比较 fold 3 和 prior folds 的分组误差差异。
+- 新增 `reports/fold3_cross_error/fold3_cross_error_report.md` 和对应 CSV 表。
+- 分析维度包括：
+  - family
+  - store
+  - promotion bin
+  - family-store
+  - family-promotion
+  - store-promotion
+  - family-store-promotion
+  - fold 3 新出现的组合
+
+结果：
+
+- fold 3 RMSLE：`0.423002`。
+- prior folds RMSLE：`0.391024`。
+- 最大 family 变差来源：`SCHOOL AND OFFICE SUPPLIES`。
+- 最大 store 变差来源：store `47`，Quito，type A。
+- 最大 promotion bin 变差来源：`11-50`。
+- 最大 family-store 变差组合：`SCHOOL AND OFFICE SUPPLIES` at store `47`。
+- 最大 fold 3 新组合：`SCHOOL AND OFFICE SUPPLIES` at store `47` with promotion bin `11-50`。
+
+结论：
+
+- fold 3 变差的最强诊断线索集中在 `SCHOOL AND OFFICE SUPPLIES`、高促销 bin `11-50` 和大店组合，模型在这些子集上明显低估。
+- 这还不能证明具体原因；下一步应单独分析 `SCHOOL AND OFFICE SUPPLIES` 的时间规律、促销规律和门店规律。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

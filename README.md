@@ -158,6 +158,23 @@ PYTHONPATH=src python3 -m store_sales.error_analysis \
 
 说明：family、store、promotion bin 表是跨 validation folds 的汇总；fold comparison 只做验证窗口级别对比。
 
+生成 fold 3 交叉误差分析：
+
+```bash
+PYTHONPATH=src python3 -m store_sales.fold3_cross_error \
+  --data-dir data/raw \
+  --artifacts-dir artifacts \
+  --output-dir reports/fold3_cross_error \
+  --target-fold 3 \
+  --min-fold-rows 4
+```
+
+输出内容：
+
+- `reports/fold3_cross_error/fold3_cross_error_report.md`
+- `reports/fold3_cross_error/tables/fold3_*_worsening.csv`
+- `reports/fold3_cross_error/tables/fold3_new_*_segments.csv`
+
 ## 下一步建议
 
 当前版本是工程化基线，适合作为后续迭代起点。你下一步可以继续加：
