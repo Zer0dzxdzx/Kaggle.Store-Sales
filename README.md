@@ -89,8 +89,9 @@ python3 -m store_sales.cli run \
 - 可通过 `--validation-windows` 开启多窗口验证，`--validation-step-days` 控制相邻验证窗口之间的步长。
 - 训练目标做了 `log1p` 变换，预测后再 `expm1` 还原，并裁剪为非负值。
 - 如果环境里装了 `lightgbm`，可以改成 `--model-type lightgbm`。
-- 可通过 `--feature-profile compact|baseline|extended|low_demand` 切换特征工程方案。
+- 可通过 `--feature-profile compact|baseline|extended|low_demand|school_supplies_aug_promo` 切换特征工程方案。
 - `low_demand` 会在 baseline 特征基础上增加 family 和 store-family 历史低需求统计特征。
+- `school_supplies_aug_promo` 会在 baseline 特征基础上增加 `SCHOOL AND OFFICE SUPPLIES` 的 8 月、promotion 和 store 交互特征。
 
 ## 模型对比
 

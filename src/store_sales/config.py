@@ -15,6 +15,7 @@ class PipelineConfig:
     model_type: str = "hist_gbdt"
     feature_profile: str = "baseline"
     demand_features: bool = False
+    school_supplies_features: bool = False
     random_state: int = 42
     sales_lags: tuple[int, ...] = (1, 7, 14, 28)
     sales_windows: tuple[int, ...] = (7, 14, 28, 56)

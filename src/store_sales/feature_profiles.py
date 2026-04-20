@@ -14,6 +14,7 @@ class FeatureProfile:
     promo_lags: tuple[int, ...]
     promo_windows: tuple[int, ...]
     demand_features: bool = False
+    school_supplies_features: bool = False
     recent_history_start: str | None = None
 
 
@@ -51,6 +52,15 @@ FEATURE_PROFILES: dict[str, FeatureProfile] = {
         promo_windows=(7, 14),
         demand_features=True,
     ),
+    "school_supplies_aug_promo": FeatureProfile(
+        name="school_supplies_aug_promo",
+        description="Baseline features plus targeted August, promotion, and store interactions for SCHOOL AND OFFICE SUPPLIES.",
+        sales_lags=(1, 7, 14, 28),
+        sales_windows=(7, 14, 28, 56),
+        promo_lags=(1, 7, 14),
+        promo_windows=(7, 14),
+        school_supplies_features=True,
+    ),
 }
 
 
@@ -72,5 +82,6 @@ def apply_feature_profile(config: PipelineConfig, profile_name: str) -> Pipeline
         promo_lags=profile.promo_lags,
         promo_windows=profile.promo_windows,
         demand_features=profile.demand_features,
+        school_supplies_features=profile.school_supplies_features,
         recent_history_start=profile.recent_history_start,
     )

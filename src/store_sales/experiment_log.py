@@ -85,6 +85,22 @@ def build_feature_summary(config: PipelineConfig) -> str:
             "store_family_row_count_hist",
             "store_family_is_low_demand",
         ]
+    school_supplies_features = []
+    if config.school_supplies_features:
+        school_supplies_features = [
+            "is_school_supplies",
+            "school_supplies_august",
+            "school_supplies_onpromotion",
+            "school_supplies_onpromotion_log1p",
+            "school_supplies_promo_6_plus",
+            "school_supplies_promo_11_50",
+            "school_supplies_type_a",
+            "school_supplies_quito_ambato",
+            "school_supplies_type_a_high_promo",
+            "school_supplies_quito_ambato_high_promo",
+            "school_supplies_august_high_promo",
+            "school_supplies_august_type_a",
+        ]
     return "|".join(
         [f"profile={config.feature_profile}"]
         + calendar_features
@@ -93,6 +109,7 @@ def build_feature_summary(config: PipelineConfig) -> str:
         + promo_features
         + exogenous_features
         + demand_features
+        + school_supplies_features
     )
 
 

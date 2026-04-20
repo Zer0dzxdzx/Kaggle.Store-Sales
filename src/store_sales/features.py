@@ -9,6 +9,8 @@ from store_sales.config import PipelineConfig
 from store_sales.data import CompetitionData
 
 KEY_COLUMNS = ["store_nbr", "family"]
+SCHOOL_SUPPLIES_FAMILY = "SCHOOL AND OFFICE SUPPLIES"
+SCHOOL_SUPPLIES_FOCUS_CITIES = {"Quito", "Ambato"}
 
 
 @dataclass(slots=True)
@@ -323,6 +325,39 @@ def add_known_exogenous_features(frame: pd.DataFrame, context: FeatureContext) -
     return enriched
 
 
+def add_school_supplies_aug_promo_features(frame: pd.DataFrame) -> pd.DataFrame:
+    enriched = frame.copy()
+    is_school_supplies = (enriched["family"] == SCHOOL_SUPPLIES_FAMILY).astype("int8")
+    is_august = (enriched["month"] == 8).astype("int8")
+    onpromotion = pd.to_numeric(enriched["onpromotion"], errors="coerce").fillna(0).astype("float32")
+    is_high_promo = (onpromotion >= 6).astype("int8")
+    is_very_high_promo = ((onpromotion >= 11) & (onpromotion <= 50)).astype("int8")
+    is_type_a = (enriched["store_type"].fillna("").astype("string") == "A").astype("int8")
+    is_focus_city = enriched["city"].fillna("").astype("string").isin(SCHOOL_SUPPLIES_FOCUS_CITIES).astype("int8")
+
+    enriched["is_school_supplies"] = is_school_supplies
+    enriched["school_supplies_august"] = (is_school_supplies * is_august).astype("int8")
+    enriched["school_supplies_onpromotion"] = (is_school_supplies.astype("float32") * onpromotion).astype("float32")
+    enriched["school_supplies_onpromotion_log1p"] = (
+        is_school_supplies.astype("float32") * np.log1p(onpromotion)
+    ).astype("float32")
+    enriched["school_supplies_promo_6_plus"] = (is_school_supplies * is_high_promo).astype("int8")
+    enriched["school_supplies_promo_11_50"] = (is_school_supplies * is_very_high_promo).astype("int8")
+    enriched["school_supplies_type_a"] = (is_school_supplies * is_type_a).astype("int8")
+    enriched["school_supplies_quito_ambato"] = (is_school_supplies * is_focus_city).astype("int8")
+    enriched["school_supplies_type_a_high_promo"] = (
+        is_school_supplies * is_type_a * is_high_promo
+    ).astype("int8")
+    enriched["school_supplies_quito_ambato_high_promo"] = (
+        is_school_supplies * is_focus_city * is_high_promo
+    ).astype("int8")
+    enriched["school_supplies_august_high_promo"] = (
+        is_school_supplies * is_august * is_high_promo
+    ).astype("int8")
+    enriched["school_supplies_august_type_a"] = (is_school_supplies * is_august * is_type_a).astype("int8")
+    return enriched
+
+
 def add_training_demand_features(train_frame: pd.DataFrame) -> pd.DataFrame:
     enriched = train_frame.copy()
     family_demand = prepare_training_demand_features(enriched, ["family"], prefix="family")
@@ -375,6 +410,8 @@ def build_feature_frame(
 ) -> pd.DataFrame:
     features = add_calendar_features(base_frame, config)
     features = add_known_exogenous_features(features, context)
+    if config.school_supplies_features:
+        features = add_school_supplies_aug_promo_features(features)
     if config.demand_features and include_sales_lags:
         features = features.drop(
             columns=[
