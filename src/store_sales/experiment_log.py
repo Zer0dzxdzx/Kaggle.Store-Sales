@@ -78,9 +78,11 @@ def build_feature_summary(config: PipelineConfig) -> str:
         demand_features = [
             "family_mean_sales_hist",
             "family_zero_rate_hist",
+            "family_row_count_hist",
             "family_is_low_demand",
             "store_family_mean_sales_hist",
             "store_family_zero_rate_hist",
+            "store_family_row_count_hist",
             "store_family_is_low_demand",
         ]
     return "|".join(
@@ -114,9 +116,13 @@ def build_experiment_log_row(
     if outputs.submission_path is None:
         default_conclusion = f"validation_rmsle_mean={mean_score}; validation-only run"
         submission_file = ""
+        changed_items = "ran validation pipeline; generated validation metrics, fold summary, and validation predictions"
     else:
         default_conclusion = f"validation_rmsle_mean={mean_score}; generated submission at {outputs.submission_path}"
         submission_file = str(outputs.submission_path)
+        changed_items = (
+            "ran full pipeline; generated validation metrics, fold summary, validation predictions, and submission"
+        )
     default_next_action = "compare against Kaggle public score and inspect multi-window stability"
 
     return {
@@ -127,9 +133,7 @@ def build_experiment_log_row(
         "data_snapshot": data_snapshot,
         "seed": str(config.random_state),
         "validation_horizon": str(config.validation_horizon),
-        "changed_items": (
-            "ran full pipeline; generated validation metrics, fold summary, validation predictions, and submission"
-        ),
+        "changed_items": changed_items,
         "features": build_feature_summary(config),
         "preprocessing": (
             "sales log1p target; oil daily interpolation; holiday locale aggregation; "

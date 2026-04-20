@@ -337,6 +337,27 @@
 - 文档补充了每张表的阅读方法、当前结果解读、不能下的结论和面试讲述版本。
 - 当前阶段 4 的核心发现是：无促销样本 RMSLE 最高，fold 3 整体更差，family 误差更偏向低销量和部分高零销量品类。
 
+#### 阶段 14：特征实验 1，low demand features
+
+- 新增 `low_demand` feature profile，在 baseline 上加入 family 和 store-family 历史低需求统计。
+- 新增 `docs/feature_experiments.md`，记录阶段 5 的实验假设、验证结果和保留决策。
+- 新增 `reports/feature_experiments/low_demand_v1/experiment_report.md`，记录本次实验报告。
+- 运行 3 窗口验证，输出目录为 `artifacts/experiments/histgbdt_low_demand_v1`。
+
+结果：
+
+- baseline mean RMSLE：`0.401601`。
+- low demand v1 mean RMSLE：`0.403019`。
+- baseline fold 3 RMSLE：`0.423002`。
+- low demand v1 fold 3 RMSLE：`0.426889`。
+- `SCHOOL AND OFFICE SUPPLIES` RMSLE 从 `0.671040` 恶化到 `0.712021`。
+
+结论：
+
+- 本实验不保留为默认方案。
+- 低需求特征对少数 family 有小幅改善，但整体和 fold 3 变差，最关键 family 也变差。
+- 下一步应先做 fold 3 的交叉误差分析，或者单独分析 `SCHOOL AND OFFICE SUPPLIES`，不要继续盲目增强 broad low-demand 特征。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

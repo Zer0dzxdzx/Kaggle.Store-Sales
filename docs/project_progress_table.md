@@ -18,7 +18,7 @@
 | 2. 读 baseline | 2026-04-16 | 理解当前 pipeline 如何从原始数据生成 submission | 判断当前 baseline 是否合理、哪里可能泄漏、验证是否贴近比赛 | 解释代码路径和关键函数 | `docs/baseline_reading.md` | 初读完成 |
 | 3. EDA 解读 | 2026-04-19 | 从图表形成建模假设 | 判断哪些发现值得转成特征或实验 | 汇总已有 EDA 图表和统计结果 | `docs/eda_interpretation.md` | 初读完成 |
 | 4. 误差分析 | 2026-04-19 | 找出模型主要错在哪里 | 判断下一步优化方向，而不是盲目调参 | 生成 family/store/promotion/fold 分组误差报告并整理说明文档 | `docs/error_analysis_reading.md` 和 `reports/error_analysis/` | 初步完成 |
-| 5. 特征实验 | 待开始 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile 和批量实验 | 实验日志与对比结果 | 待开始 |
+| 5. 特征实验 | 2026-04-20 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile、跑验证、记录实验日志 | `docs/feature_experiments.md` 和 `docs/experiment_log.csv` | 实验 1 完成 |
 | 6. 项目总结 | 待开始 | 把项目转成简历和面试可讲述内容 | 决定哪些结论真实、哪些不能夸大 | 整理 README 和总结初稿 | 简历项目描述与面试讲述稿 | 待开始 |
 
 ## 阶段 0：读题记录
@@ -117,3 +117,11 @@
 - fold 3 整体更差，但原因还没有被定位。
 
 下一步应在这些结论中选择一个明确方向进入阶段 5 特征实验。
+
+阶段 5 实验 1 已完成：
+
+- 实验方向：family/store-family low-demand history features。
+- 结果：mean RMSLE 从 baseline `0.401601` 变为 `0.403019`，更差。
+- fold 3 从 `0.423002` 变为 `0.426889`，更差。
+- `SCHOOL AND OFFICE SUPPLIES` RMSLE 从 `0.671040` 变为 `0.712021`，明显恶化。
+- 决策：不把 `low_demand` 作为默认特征方案，保留代码供后续参考。
