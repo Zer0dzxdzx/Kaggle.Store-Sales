@@ -68,7 +68,7 @@ Lower RMSLE is better / RMSLE 越低越好。
 | 51 | Guayaquil | A | 0 | 16 | 0.847989 | 1.017846 | 0.169858 | 3.875000 | 4.396971 | 5.515646 | 1.118675 |
 | 8 | Quito | D | 0 | 16 | 0.733580 | 0.725549 | -0.008031 | 1.562500 | 0.403717 | 0.455907 | 0.052190 |
 
-## Decision
+## Pre-Submission Decision
 
 Keep this feature profile as a candidate, but do not replace the default baseline yet.
 
@@ -82,7 +82,21 @@ Reason:
 - The original underprediction in high-promotion store segments is reduced.
 - 风险：该实验是根据 fold 3 问题反推设计的，存在 validation selection bias，需要 public score 或更多未参与设计的窗口验证。
 
-Next action: generate a submission with this profile and compare Kaggle public score against the current baseline public score `0.58410`.
+## Kaggle Public Score
+
+| Submission | Public score |
+| --- | ---: |
+| baseline | 0.58410 |
+| `school_supplies_aug_promo` | 0.59096 |
+
+Lower RMSLE is better / RMSLE 越低越好。
+
+Final decision / 最终判断：
+
+- Do not replace the default baseline.
+- 不替换 default baseline。
+- Local validation improved, but Kaggle public score became worse.
+- This confirms the validation selection bias risk: the feature profile fits the local fold 3 issue better than it generalizes to the public test period.
 
 ## Generated Tables
 

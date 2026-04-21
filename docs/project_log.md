@@ -432,6 +432,25 @@
 - 下一步应生成该 profile 的 submission，提交 Kaggle 并和 baseline public score `0.58410` 对比。
 - 由于特征设计来自 fold 3 错误分析，需要警惕 validation selection bias；如果 public score 不改善，说明它可能只是贴合本地 fold 3。
 
+#### 阶段 18：school supplies v1 Kaggle public score
+
+- 使用 `school_supplies_aug_promo` 生成 submission。
+- 提交文件：`artifacts/submissions/school_supplies_aug_promo_v1/submission.csv`。
+- Kaggle public score：`0.59096`。
+- baseline public score：`0.58410`。
+
+结论：
+
+- 这次 public score 比 baseline 更差，不能替换 default baseline。
+- 本地 validation 从 `0.401601` 改善到 `0.398186`，但 public score 从 `0.58410` 变差到 `0.59096`，说明本地 fold 3 改善没有泛化。
+- 这是一个明确的 validation selection bias 案例：根据 fold 3 暴露的问题设计特征，再用 fold 3 改善作为核心证据，会高估真实 leaderboard 效果。
+
+下一步：
+
+- 当前最佳提交仍是 baseline。
+- 不继续沿 `school_supplies_aug_promo` 加强。
+- 后续优先改进验证设计，或尝试更稳健的模型/全局特征方案。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

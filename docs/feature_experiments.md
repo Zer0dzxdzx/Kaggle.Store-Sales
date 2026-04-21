@@ -257,7 +257,7 @@ fold 3 交叉误差分析已经把最大问题定位到 `SCHOOL AND OFFICE SUPPL
 
 ### 判断
 
-保留为 candidate profile，但暂时不替换默认 baseline。
+提交前判断：保留为 candidate profile，但暂时不替换默认 baseline。
 
 原因：
 
@@ -265,14 +265,32 @@ fold 3 交叉误差分析已经把最大问题定位到 `SCHOOL AND OFFICE SUPPL
 - fold 3 明显改善，且 fold 3 最接近 Kaggle test period。
 - `SCHOOL AND OFFICE SUPPLIES` fold 3 大幅改善。
 - high-promotion store segments 的 underprediction 被缓解。
-- 但本实验还没有生成 Kaggle submission，不能确认 public score 是否同步改善。
 - 由于特征设计来自 fold 3 错误分析，存在 validation selection bias，不能只看 fold 3 改善就替换默认方案。
+
+### Kaggle public score
+
+| Submission | Local validation RMSLE | Kaggle public score | 对比 baseline public |
+| --- | ---: | ---: | ---: |
+| baseline | 0.401601 | 0.58410 | 0 |
+| `school_supplies_aug_promo` | 0.398186 | 0.59096 | +0.00686 |
+
+RMSLE 越低越好，因此这次 submission 比 baseline 更差。
+
+最终判断：
+
+- 不把 `school_supplies_aug_promo` 替换为 default baseline。
+- 本地 mean RMSLE 和 fold 3 都变好，但 public score 变差，说明该特征很可能贴合了本地 fold 3，而没有泛化到 Kaggle public test。
+- 这是 validation selection bias 的一个实际例子：根据 fold 3 error analysis 设计特征，再用 fold 3 改善证明自己，容易高估真实效果。
 
 ### 下一步
 
-下一步应该用 `school_supplies_aug_promo` 生成 submission 并提交 Kaggle，对比当前 baseline public score `0.58410`。
+当前最佳提交仍是 baseline public score `0.58410`。
 
-如果 public score 改善，再考虑把它作为新的候选提交方案；如果 public score 没改善，则说明该实验可能过拟合本地 fold 3。
+后续不继续沿 `school_supplies_aug_promo` 加强。更合理的下一步是：
+
+- 改进验证方式，例如增加更多 rolling windows 或单独看非目标 family/fold 的副作用。
+- 尝试更稳健的全局特征或模型对比，而不是继续为单个 fold 的异常片段加特征。
+- 如果继续研究 `SCHOOL AND OFFICE SUPPLIES`，必须先找到能在非目标窗口也成立的证据。
 
 对应报告：
 
