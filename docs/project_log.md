@@ -540,6 +540,44 @@
 
 - `reports/validation/august_global_models/validation_window_report.md`
 
+#### 阶段 22：simple prediction blending
+
+- 目标：在不新增特征、不重新训练模型的情况下，测试简单 prediction blending 是否能提升稳定性。
+- LightGBM 状态：当前环境没有安装 `lightgbm`，本轮未运行 LightGBM 训练。
+- 新增工具：`src/store_sales/blend_validation.py`，用于读取两个 validation run 的 fold predictions 并按权重做加权平均。
+
+实验 1：`histgbdt_baseline + seasonal_naive`
+
+- 结果：失败。
+- 最轻量的 `99% baseline + 1% seasonal_naive` mean RMSLE 为 `0.495169`，差于 baseline `0.490514`。
+- 决策：不保留，不生成 submission。
+
+实验 2：`histgbdt_baseline + histgbdt_extended`
+
+- 最优权重：`55% baseline + 45% extended`。
+- mean RMSLE：`0.490514 -> 0.486839`。
+- worst fold RMSLE：`0.656282 -> 0.645720`。
+- fold 1/3/4 改善，但 fold 2 回退 `+0.009239`。
+
+stability checks：
+
+- target family 略差：`0.681330 -> 0.681433`。
+- non-target families 整体改善：`0.493954 -> 0.489896`。
+- 仍有 `7` 个非目标 family 变差。
+- test-overweighted non-target regression slices 仍有 `15` 个。
+
+结论：
+
+- `baseline + extended` blending 是一个有信号但有风险的 validation candidate。
+- 由于存在 fold 2 回退和 public-like 切片风险，本轮不生成 Kaggle submission。
+- 当前 best submission 仍是 baseline public score `0.58410`。
+
+相关报告：
+
+- `reports/validation/august_blending/blend_report.md`
+- `reports/validation/august_blending_baseline_extended/blend_report.md`
+- `reports/validation/august_blending_baseline_extended/stability_slices/stability_slice_report.md`
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

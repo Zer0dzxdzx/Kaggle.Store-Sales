@@ -22,7 +22,6 @@ METRIC_COMPATIBILITY_FIELDS = [
     "validation_horizon_days",
     "validation_windows",
     "validation_step_days",
-    "model_type",
 ]
 PREDICTION_KEY_COLUMNS = ["fold_id", "date", "store_nbr", "family"]
 

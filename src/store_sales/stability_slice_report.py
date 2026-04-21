@@ -296,7 +296,7 @@ def write_report(
 
     if not worsened_non_target.empty:
         lines.append(
-            "- `school_supplies_aug_promo` has non-target family regressions. This is a plausible reason why public score can worsen even when mean validation improves."
+            f"- `{experiment_name}` has non-target family regressions. This is a plausible reason why public score can worsen even when mean validation improves."
         )
     else:
         lines.append(

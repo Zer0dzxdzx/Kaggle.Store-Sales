@@ -182,3 +182,13 @@
 - `seasonal_naive` 和 `ridge_baseline` 明显弱于 tree baseline，只能作为参考。
 - LightGBM 本轮未运行，因为当前环境没有安装 `lightgbm`。
 - 决策：不替换 baseline，不生成新提交；下一步优先尝试 LightGBM 或简单 blending，并继续用 stability slice checks 作为保留门槛。
+
+阶段 5 simple prediction blending 已完成：
+
+- LightGBM 当前环境不可用，未运行训练；本轮先做不依赖新包的 simple blending。
+- 新增 `src/store_sales/blend_validation.py`，用于读取两个 validation run 的 fold predictions 并按权重混合。
+- `baseline + seasonal_naive` 失败：`99% baseline + 1% seasonal_naive` mean RMSLE 为 `0.495169`，差于 baseline `0.490514`。
+- `baseline + extended` 有信号：最佳为 `55% baseline + 45% extended`，mean RMSLE `0.486839`，worst fold `0.645720`。
+- 但最佳 blend 的 fold 2 回退 `+0.009239`。
+- stability checks 显示 target family 略差，仍有 `7` 个非目标 family 变差，并有 `15` 个 test-overweighted non-target regression slices。
+- 决策：暂不生成 Kaggle submission；该 blend 只能作为有风险候选，当前 best submission 仍是 baseline public score `0.58410`。

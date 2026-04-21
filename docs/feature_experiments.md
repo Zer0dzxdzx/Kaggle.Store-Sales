@@ -471,3 +471,90 @@ LightGBM 本轮没有运行，因为当前环境没有安装 `lightgbm`。
 - `reports/validation/august_global_models/validation_window_report.md`
 - `reports/validation/august_global_models/run_summary.csv`
 - `reports/validation/august_global_models/fold_comparison.csv`
+
+## Simple Blending 实验
+
+### 目的
+
+在全局模型对比后，尝试不改动特征、不重新训练的新方向：把两个 validation run 的 `sales_pred` 做加权平均。
+
+LightGBM 本轮仍未运行，原因是当前环境没有安装 `lightgbm`。因此先做不依赖新包的 simple prediction blending。
+
+本轮新增工具：
+
+- `src/store_sales/blend_validation.py`
+
+它不会训练模型，只读取已有 fold prediction files：
+
+- `validation_predictions_fold_01.csv`
+- `validation_predictions_fold_02.csv`
+- `validation_predictions_fold_03.csv`
+- `validation_predictions_fold_04.csv`
+
+然后按权重生成 blended validation predictions、`validation_summary.csv` 和报告。
+
+### Baseline + Seasonal Naive
+
+结论：失败。
+
+即使只加入 `1%` 的 `seasonal_naive`，结果也变差：
+
+| Run | Mean RMSLE | Worst fold RMSLE | 判断 |
+| --- | ---: | ---: | --- |
+| `histgbdt_baseline` | 0.490514 | 0.656282 | 当前基准 |
+| `blend_histgbdt_baseline_seasonal_naive_base_w990` | 0.495169 | 0.669048 | 变差 |
+| `seasonal_naive` | 0.624068 | 0.821798 | 太弱 |
+
+判断：
+
+- `seasonal_naive` 和 baseline 的预测质量差距太大。
+- 简单平均会把 baseline 拉向弱模型，不能作为提交候选。
+
+### Baseline + Extended
+
+结论：有局部信号，但暂不提交。
+
+`histgbdt_extended` 单独看 mean RMSLE 更差，但它在 fold 1/3/4 比 baseline 好，只是 fold 2 大幅变差。因此尝试和 baseline blending。
+
+最佳权重：
+
+- `blend_histgbdt_baseline_histgbdt_extended_base_w550`
+- 含义：`55% baseline + 45% extended`
+
+结果：
+
+| Run | Mean RMSLE | Worst fold RMSLE | 判断 |
+| --- | ---: | ---: | --- |
+| `histgbdt_baseline` | 0.490514 | 0.656282 | 当前 best submission 对应方案 |
+| `histgbdt_extended` | 0.500922 | 0.633934 | mean 差，但 worst fold 更好 |
+| `blend_histgbdt_baseline_histgbdt_extended_base_w550` | 0.486839 | 0.645720 | mean 和 worst fold 都改善 |
+
+fold 级别：
+
+- fold 1：改善 `-0.010417`
+- fold 2：回退 `+0.009239`
+- fold 3：改善 `-0.010562`
+- fold 4：改善 `-0.002960`
+
+### Stability Slice 判断
+
+对最佳 blend `w550` 做 public-like stability checks：
+
+- target family RMSLE：`0.681330 -> 0.681433`，略差。
+- non-target families 整体 RMSLE：`0.493954 -> 0.489896`，整体改善。
+- 但仍有 `7` 个非目标 family 变差。
+- promotion bin 中 `2-5`、`1`、`51+`、`11-50`、`6-10` 都变差，只有 `0` bin 改善。
+- test-overweighted non-target regression slices 仍有 `15` 个。
+
+判断：
+
+- 这个 blend 比单独 `extended` 更合理，也比 baseline 有更好的 mean/worst fold。
+- 但它不是“稳定通过”的候选，因为 fold 2 回退、促销切片回退、test-overweighted 回退仍存在。
+- 暂不生成 Kaggle submission。
+- 如果后续要冒险提交，应明确记录它是一个带风险的 validation candidate，而不是新的默认 best model。
+
+对应报告：
+
+- `reports/validation/august_blending/blend_report.md`
+- `reports/validation/august_blending_baseline_extended/blend_report.md`
+- `reports/validation/august_blending_baseline_extended/stability_slices/stability_slice_report.md`
