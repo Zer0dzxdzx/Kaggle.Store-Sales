@@ -578,6 +578,45 @@ stability checks：
 - `reports/validation/august_blending_baseline_extended/blend_report.md`
 - `reports/validation/august_blending_baseline_extended/stability_slices/stability_slice_report.md`
 
+#### 阶段 23：LightGBM baseline validation
+
+- 目标：安装 LightGBM 后，直接用现有 baseline feature profile 跑同一组 August / pre-test explicit windows。
+- 环境：`lightgbm==4.6.0`。
+- 运行方式：`--model-type lightgbm --feature-profile baseline --skip-submission`。
+
+结果：
+
+- `lightgbm_baseline` mean RMSLE：`0.486767`。
+- `histgbdt_baseline` mean RMSLE：`0.490514`。
+- `blend_histgbdt_baseline_histgbdt_extended_base_w550` mean RMSLE：`0.486839`。
+- LightGBM 是当前 August / pre-test windows mean RMSLE 最低的模型。
+
+fold 对比：
+
+- fold 1 回退：`+0.048240`。
+- fold 2 回退：`+0.040950`。
+- fold 3 改善：`-0.073167`。
+- fold 4 改善：`-0.031013`。
+- worst fold 从 `0.656282` 降到 `0.583115`。
+
+stability checks：
+
+- target family RMSLE：`0.681330 -> 0.572111`。
+- non-target families 整体 RMSLE：`0.493954 -> 0.489086`。
+- 但仍有 `13` 个非目标 family 变差。
+- test-overweighted non-target regression slices 有 `8` 个。
+
+结论：
+
+- LightGBM 是当前最有价值的新候选模型。
+- 但由于 fold 1/2 回退和非目标切片风险，本轮还不直接替换 baseline。
+- 下一步如果要验证 leaderboard，应生成 LightGBM submission 并记录 Kaggle public score。
+
+相关报告：
+
+- `reports/validation/august_lightgbm/validation_window_report.md`
+- `reports/validation/august_lightgbm/stability_slices/stability_slice_report.md`
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

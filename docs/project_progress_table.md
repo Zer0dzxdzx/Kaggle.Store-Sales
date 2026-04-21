@@ -192,3 +192,13 @@
 - 但最佳 blend 的 fold 2 回退 `+0.009239`。
 - stability checks 显示 target family 略差，仍有 `7` 个非目标 family 变差，并有 `15` 个 test-overweighted non-target regression slices。
 - 决策：暂不生成 Kaggle submission；该 blend 只能作为有风险候选，当前 best submission 仍是 baseline public score `0.58410`。
+
+阶段 5 LightGBM baseline validation 已完成：
+
+- 已安装并验证 `lightgbm==4.6.0` 可用。
+- 使用 baseline feature profile 和同一组 August / pre-test explicit windows 跑 `--model-type lightgbm`。
+- `lightgbm_baseline` mean RMSLE 为 `0.486767`，低于 `histgbdt_baseline` 的 `0.490514`，也略低于最佳 simple blend 的 `0.486839`。
+- worst fold 从 baseline `0.656282` 降到 `0.583115`，改善明显。
+- 但 fold 1/2 分别回退 `+0.048240` 和 `+0.040950`。
+- stability checks 显示 target family 和 non-target overall 都改善，但仍有 `13` 个非目标 family 变差，以及 `8` 个 test-overweighted non-target regression slices。
+- 决策：LightGBM 是下一步最值得提交验证的候选，但还不能仅凭本地验证替换 baseline；如果生成 submission，必须记录为“有风险候选”。

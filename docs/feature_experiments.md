@@ -558,3 +558,76 @@ fold 级别：
 - `reports/validation/august_blending/blend_report.md`
 - `reports/validation/august_blending_baseline_extended/blend_report.md`
 - `reports/validation/august_blending_baseline_extended/stability_slices/stability_slice_report.md`
+
+## LightGBM Baseline 实验
+
+### 目的
+
+在安装 `lightgbm==4.6.0` 后，直接用现有 baseline feature profile 跑 LightGBM，检查它是否比 `HistGradientBoostingRegressor` 更适合作为下一阶段模型。
+
+本轮仍使用同一组 August / pre-test explicit windows：
+
+- `2014-08-16` 到 `2014-08-31`
+- `2015-08-16` 到 `2015-08-31`
+- `2016-08-16` 到 `2016-08-31`
+- `2017-07-31` 到 `2017-08-15`
+
+运行方式：
+
+```bash
+PYTHONPATH=src python3 -m store_sales.cli run \
+  --data-dir data/raw \
+  --output-dir artifacts/validation/august_windows/lightgbm_baseline \
+  --train-start-date 2013-01-01 \
+  --validation-horizon 16 \
+  --validation-window 2014-08-16:2014-08-31 \
+  --validation-window 2015-08-16:2015-08-31 \
+  --validation-window 2016-08-16:2016-08-31 \
+  --validation-window 2017-07-31:2017-08-15 \
+  --feature-profile baseline \
+  --model-type lightgbm \
+  --skip-submission
+```
+
+### 结果
+
+| Run | Mean RMSLE | Worst fold RMSLE | 判断 |
+| --- | ---: | ---: | --- |
+| `lightgbm_baseline` | 0.486767 | 0.583115 | 当前 mean 最好，worst fold 明显改善 |
+| `blend_histgbdt_baseline_histgbdt_extended_base_w550` | 0.486839 | 0.645720 | 略差于 LightGBM |
+| `histgbdt_baseline` | 0.490514 | 0.656282 | 当前 best submission 对应方案 |
+| `histgbdt_extended` | 0.500922 | 0.633934 | mean 差 |
+
+fold 级别：
+
+- fold 1：`0.394681 -> 0.442921`，回退 `+0.048240`
+- fold 2：`0.479351 -> 0.520300`，回退 `+0.040950`
+- fold 3：`0.656282 -> 0.583115`，改善 `-0.073167`
+- fold 4：`0.431742 -> 0.400730`，改善 `-0.031013`
+
+### Stability Slice 判断
+
+LightGBM 的优点：
+
+- mean RMSLE 低于 baseline。
+- worst fold 大幅改善。
+- target family `SCHOOL AND OFFICE SUPPLIES` RMSLE 从 `0.681330` 降到 `0.572111`。
+- non-target families 整体 RMSLE 从 `0.493954` 降到 `0.489086`。
+
+风险：
+
+- fold 1/2 明显回退，说明 LightGBM 不是在所有历史窗口都更稳。
+- 有 `13` 个非目标 family 变差。
+- `PRODUCE` 回退明显，family-level RMSLE delta 为 `+0.081250`。
+- test-overweighted non-target regression slices 有 `8` 个，例如 `PRODUCE + 2-5`、`PRODUCE + 1`、`MEATS + 11-50`。
+
+判断：
+
+- LightGBM 是当前最值得继续推进的候选模型。
+- 但它还不能直接替换 baseline，因为 public-like stability checks 仍有风险。
+- 下一步可以生成 LightGBM submission 做 Kaggle public score 验证，但必须记录它是“有风险候选”，不是已经确认的新 best model。
+
+对应报告：
+
+- `reports/validation/august_lightgbm/validation_window_report.md`
+- `reports/validation/august_lightgbm/stability_slices/stability_slice_report.md`
