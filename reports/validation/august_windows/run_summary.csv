@@ -1,0 +1,3 @@
+run_name,validation_rmsle_mean,validation_rmsle_std,validation_rmsle_min,validation_rmsle_max,worst_fold_id,train_rows_min,train_rows_max,artifacts_dir
+histgbdt_school_supplies_aug_promo,0.48642513298036283,0.1020370222728826,0.3907959599906986,0.6553521317446125,3,1053162,2972376,artifacts/validation/august_windows/histgbdt_school_supplies_aug_promo
+histgbdt_baseline,0.49051390384131166,0.10030169871384348,0.3946807938010644,0.6562818871893319,3,1053162,2972376,artifacts/validation/august_windows/histgbdt_baseline

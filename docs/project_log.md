@@ -451,6 +451,36 @@
 - 不继续沿 `school_supplies_aug_promo` 加强。
 - 后续优先改进验证设计，或尝试更稳健的模型/全局特征方案。
 
+#### 阶段 19：August / pre-test historical validation
+
+- 新增显式 validation windows 能力：`--validation-window YYYY-MM-DD:YYYY-MM-DD`。
+- 新增 `src/store_sales/validation_window_report.py`，用于比较多个 run 在同一组窗口上的表现。
+- 使用 `train_start_date=2013-01-01`，因为 2014 年窗口需要 2013 年历史数据生成 lag/rolling 特征。
+
+验证窗口：
+
+- `2014-08-16` 到 `2014-08-31`
+- `2015-08-16` 到 `2015-08-31`
+- `2016-08-16` 到 `2016-08-31`
+- `2017-07-31` 到 `2017-08-15`
+
+结果：
+
+- `histgbdt_baseline` mean RMSLE：`0.490514`。
+- `histgbdt_school_supplies_aug_promo` mean RMSLE：`0.486425`。
+- 两个 run 的 worst fold 都是 fold 3，也就是 `2016-08-16` 到 `2016-08-31`。
+- 在四个窗口上，`school_supplies_aug_promo` 都略优于 baseline。
+
+结论：
+
+- August / pre-test windows 没有筛掉 `school_supplies_aug_promo`。
+- 这说明“历史 8 月窗口”能补充验证，但仍不足以预测 Kaggle public score。
+- 之后不能只依赖 mean RMSLE；需要增加 public-like 切片检查，例如非目标 family 副作用、promotion bin 分布、store/family 分组漂移。
+
+相关报告：
+
+- `reports/validation/august_windows/validation_window_report.md`
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

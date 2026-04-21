@@ -315,3 +315,53 @@ PYTHONPATH=src python3 -m store_sales.feature_experiment_report \
   --target-fold 3 \
   --min-rows 4
 ```
+
+## 验证体系实验：August / Pre-Test Windows
+
+### 目的
+
+`school_supplies_aug_promo` 的问题不是“本地没有变好”，而是“本地变好但 public 变差”。因此下一步先改进验证方式，检查历史 8 月窗口能不能筛掉这个失败实验。
+
+本次新增显式 validation windows：
+
+| Fold | Window | 含义 |
+| --- | --- | --- |
+| 1 | `2014-08-16` 到 `2014-08-31` | 历史 8 月下半月 |
+| 2 | `2015-08-16` 到 `2015-08-31` | 历史 8 月下半月 |
+| 3 | `2016-08-16` 到 `2016-08-31` | 历史 8 月下半月 |
+| 4 | `2017-07-31` 到 `2017-08-15` | test 前最后 16 天；不是 8 月下半月，因为训练集没有 `2017-08-16` 之后真实 sales |
+
+本次验证使用 `train_start_date=2013-01-01`，因为 2014 年窗口需要 2013 年历史数据做 lag/rolling 特征。
+
+### 对比结果
+
+| Run | Mean RMSLE | Worst fold RMSLE | Worst fold |
+| --- | ---: | ---: | ---: |
+| `histgbdt_baseline` | 0.490514 | 0.656282 | 3 |
+| `histgbdt_school_supplies_aug_promo` | 0.486425 | 0.655352 | 3 |
+
+按 August / pre-test windows 看，`school_supplies_aug_promo` 仍然比 baseline 略好：
+
+- fold 1 delta：`-0.003885`
+- fold 2 delta：`-0.004289`
+- fold 3 delta：`-0.000930`
+- fold 4 delta：`-0.007251`
+
+### 判断
+
+这个验证实验没有筛掉 `school_supplies_aug_promo`，但 Kaggle public score 已经证明它更差：
+
+- baseline public score：`0.58410`
+- `school_supplies_aug_promo` public score：`0.59096`
+
+结论：
+
+- 只增加历史 8 月窗口还不够。
+- August windows 能检查季节位置，但不能完全模拟 Kaggle public test 的分布。
+- 下一步不能只看 mean RMSLE，还要增加 public-like 稳定性检查，例如非目标 family 副作用、promotion 分布切片、store/family 分组漂移。
+
+对应报告：
+
+- `reports/validation/august_windows/validation_window_report.md`
+- `reports/validation/august_windows/run_summary.csv`
+- `reports/validation/august_windows/fold_comparison.csv`

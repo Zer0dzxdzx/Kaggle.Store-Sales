@@ -18,7 +18,7 @@
 | 2. 读 baseline | 2026-04-16 | 理解当前 pipeline 如何从原始数据生成 submission | 判断当前 baseline 是否合理、哪里可能泄漏、验证是否贴近比赛 | 解释代码路径和关键函数 | `docs/baseline_reading.md` | 初读完成 |
 | 3. EDA 解读 | 2026-04-19 | 从图表形成建模假设 | 判断哪些发现值得转成特征或实验 | 汇总已有 EDA 图表和统计结果 | `docs/eda_interpretation.md` | 初读完成 |
 | 4. 误差分析 | 2026-04-19 | 找出模型主要错在哪里 | 判断下一步优化方向，而不是盲目调参 | 生成 family/store/promotion/fold 分组误差报告并整理说明文档 | `docs/error_analysis_reading.md` 和 `reports/error_analysis/` | 初步完成 |
-| 5. 特征实验 | 2026-04-20 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile、跑验证、记录实验日志 | `docs/feature_experiments.md` 和 `docs/experiment_log.csv` | 实验 2 已提交验证，不替换 baseline |
+| 5. 特征实验 | 2026-04-20 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile、跑验证、记录实验日志 | `docs/feature_experiments.md` 和 `docs/experiment_log.csv` | 实验 2 已提交验证，不替换 baseline；August validation 已补充 |
 | 6. 项目总结 | 待开始 | 把项目转成简历和面试可讲述内容 | 决定哪些结论真实、哪些不能夸大 | 整理 README 和总结初稿 | 简历项目描述与面试讲述稿 | 待开始 |
 
 ## 阶段 0：读题记录
@@ -154,3 +154,12 @@
 - store `47` + promotion bin `11-50` 的 predicted mean 从 `33.6` 提高到 `96.8`，actual mean 为 `538.4`，underprediction 有缓解但仍存在。
 - Kaggle public score 为 `0.59096`，差于 baseline `0.58410`。
 - 决策：不替换 default baseline；本地改善但 public 变差，说明该实验存在 validation selection bias，不继续沿 `school_supplies_aug_promo` 加强。
+
+阶段 5 August / pre-test validation 已完成：
+
+- 新增显式窗口验证能力：`--validation-window YYYY-MM-DD:YYYY-MM-DD`。
+- 窗口包括 `2014/2015/2016-08-16~08-31` 和 `2017-07-31~08-15`。
+- `histgbdt_baseline` mean RMSLE：`0.490514`。
+- `histgbdt_school_supplies_aug_promo` mean RMSLE：`0.486425`。
+- 结果：August windows 仍然认为 `school_supplies_aug_promo` 更好，但 Kaggle public score 更差。
+- 决策：历史 8 月窗口只能补充验证，不能单独作为提交判断；下一步要增加非目标 family、promotion bin、store/family drift 等 public-like 稳定性检查。
