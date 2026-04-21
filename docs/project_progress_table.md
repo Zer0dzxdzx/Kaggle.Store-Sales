@@ -163,3 +163,11 @@
 - `histgbdt_school_supplies_aug_promo` mean RMSLE：`0.486425`。
 - 结果：August windows 仍然认为 `school_supplies_aug_promo` 更好，但 Kaggle public score 更差。
 - 决策：历史 8 月窗口只能补充验证，不能单独作为提交判断；下一步要增加非目标 family、promotion bin、store/family drift 等 public-like 稳定性检查。
+
+阶段 5 public-like stability slice checks 已完成：
+
+- target family RMSLE 改善：`0.681330 -> 0.599242`。
+- non-target families 整体略改善：`0.493954 -> 0.493476`。
+- 但有 `16` 个非目标 family 变差，包括 `DELI`、`MAGAZINES`、`CLEANING`、`BEVERAGES`。
+- test 中部分真实变差的 family-promotion 切片占比更高，例如 `PERSONAL CARE + 11-50`、`DAIRY + 11-50`、`BREAD/BAKERY + 11-50`。
+- 决策：后续实验保留规则要加入 non-target regression count、promotion bin regression、test-overweighted regression slices，不能只看 mean RMSLE。

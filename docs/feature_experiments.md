@@ -365,3 +365,63 @@ PYTHONPATH=src python3 -m store_sales.feature_experiment_report \
 - `reports/validation/august_windows/validation_window_report.md`
 - `reports/validation/august_windows/run_summary.csv`
 - `reports/validation/august_windows/fold_comparison.csv`
+
+## 稳定性切片检查：Non-Target / Promotion / Drift
+
+### 目的
+
+August windows 仍然认为 `school_supplies_aug_promo` 更好，但 public score 更差。因此继续拆解：
+
+- 是否伤害了非目标 family？
+- 哪些 promotion bin 变差？
+- validation 和 test 的 family-promotion 分布是否不同？
+- 被 test 放大的切片里，是否存在本地已经变差的 family？
+
+### 结果
+
+Target vs non-target：
+
+| Group | Baseline RMSLE | Experiment RMSLE | Delta |
+| --- | ---: | ---: | ---: |
+| target family | 0.681330 | 0.599242 | -0.082087 |
+| non-target families | 0.493954 | 0.493476 | -0.000478 |
+
+表面上看，非目标 family 整体没有变差。但进一步拆开 family 后：
+
+- 非目标 family 变差数量：`16`
+- 非目标 family 改善数量：`16`
+- 变差最大的非目标 family：`DELI`，RMSLE delta `+0.007368`
+- 其他变差 family 包括 `MAGAZINES`、`CLEANING`、`BEVERAGES`、`PET SUPPLIES`、`BEAUTY`
+
+Promotion bin：
+
+- `0` promotion bin 变差：delta `+0.000372`
+- 其他 promotion bin 大多改善，尤其 `11-50` 改善明显：delta `-0.044323`
+
+Test distribution drift：
+
+- test 中 `PERSONAL CARE + 11-50` 比 validation 占比更高，share delta `+0.014450`，且该切片 RMSLE 变差 `+0.003838`。
+- test 中 `DAIRY + 11-50` 占比更高，share delta `+0.011162`，且该切片 RMSLE 变差 `+0.005029`。
+- test 中 `BREAD/BAKERY + 11-50` 占比更高，share delta `+0.009961`，且该切片 RMSLE 变差 `+0.007607`。
+
+### 判断
+
+这给 public score 变差提供了更具体的解释：
+
+- `school_supplies_aug_promo` 对目标 family 改善很大。
+- 但它同时让一批非目标 family 变差。
+- Kaggle test 的促销分布又放大了部分真实变差的 `family + promotion_bin` 切片。
+- 所以 mean validation 变好，public 仍可能变差。
+
+这说明后续判断 feature profile 不能只看 mean RMSLE，也不能只看 target family。必须加入：
+
+- non-target family regression count
+- promotion bin regression
+- test-overweighted regression slices
+
+对应报告：
+
+- `reports/validation/august_windows/stability_slices/stability_slice_report.md`
+- `reports/validation/august_windows/stability_slices/tables/overweighted_non_target_regressions.csv`
+- `reports/validation/august_windows/stability_slices/tables/family_comparison.csv`
+- `reports/validation/august_windows/stability_slices/tables/promotion_bin_comparison.csv`

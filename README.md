@@ -124,6 +124,20 @@ PYTHONPATH=src python3 -m store_sales.validation_window_report \
   --run histgbdt_school_supplies_aug_promo=artifacts/validation/august_windows/histgbdt_school_supplies_aug_promo
 ```
 
+进一步生成 public-like stability slice 报告：
+
+```bash
+PYTHONPATH=src python3 -m store_sales.stability_slice_report \
+  --data-dir data/raw \
+  --baseline-artifacts-dir artifacts/validation/august_windows/histgbdt_baseline \
+  --experiment-artifacts-dir artifacts/validation/august_windows/histgbdt_school_supplies_aug_promo \
+  --output-dir reports/validation/august_windows/stability_slices \
+  --baseline-name histgbdt_baseline \
+  --experiment-name histgbdt_school_supplies_aug_promo \
+  --target-family "SCHOOL AND OFFICE SUPPLIES" \
+  --min-rows 30
+```
+
 ## 模型对比
 
 运行多模型验证对比：

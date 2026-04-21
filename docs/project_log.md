@@ -481,6 +481,34 @@
 
 - `reports/validation/august_windows/validation_window_report.md`
 
+#### 阶段 20：public-like stability slice checks
+
+- 新增 `src/store_sales/stability_slice_report.py`。
+- 基于 August / pre-test validation artifacts，对 `histgbdt_baseline` 和 `histgbdt_school_supplies_aug_promo` 做稳定性切片检查。
+- 检查范围：
+  - target vs non-target family
+  - family-level side effects
+  - promotion bin stability
+  - validation/test family-promotion distribution drift
+  - test-overweighted non-target regressions
+
+结果：
+
+- target family RMSLE 从 `0.681330` 降到 `0.599242`，改善明显。
+- non-target families 整体 RMSLE 从 `0.493954` 降到 `0.493476`，表面略好。
+- 但拆到 family 后，有 `16` 个非目标 family 变差。
+- 变差最大的非目标 family 是 `DELI`，RMSLE delta `+0.007368`。
+- `PERSONAL CARE + 11-50`、`DAIRY + 11-50`、`BREAD/BAKERY + 11-50` 在 test 中占比更高，同时这些具体切片本地已经变差。
+
+结论：
+
+- 这解释了为什么 mean validation 变好但 public score 变差：target family 的大幅改善掩盖了非目标 family 的局部回退，而 test 的 promotion 分布又放大了部分真实回退切片。
+- 后续 feature profile 必须增加稳定性门槛：非目标 family 回退数量、promotion bin 回退、test-overweighted regression slices。
+
+相关报告：
+
+- `reports/validation/august_windows/stability_slices/stability_slice_report.md`
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：
