@@ -191,7 +191,7 @@
 - `baseline + extended` 有信号：最佳为 `55% baseline + 45% extended`，mean RMSLE `0.486839`，worst fold `0.645720`。
 - 但最佳 blend 的 fold 2 回退 `+0.009239`。
 - stability checks 显示 target family 略差，仍有 `7` 个非目标 family 变差，并有 `15` 个 test-overweighted non-target regression slices。
-- 决策：暂不生成 Kaggle submission；该 blend 只能作为有风险候选，当前 best submission 仍是 baseline public score `0.58410`。
+- 决策：暂不生成 Kaggle submission；该 blend 只能作为有风险候选，当时 best submission 仍是 baseline public score `0.58410`。
 
 阶段 5 LightGBM baseline validation 已完成：
 
@@ -203,4 +203,5 @@
 - stability checks 显示 target family 和 non-target overall 都改善，但仍有 `13` 个非目标 family 变差，以及 `8` 个 test-overweighted non-target regression slices。
 - 已生成 candidate submission：`artifacts/submissions/lightgbm_baseline_v1/submission.csv`。
 - submission 已通过本地格式校验：行数/id 顺序与 `sample_submission.csv` 一致，无重复、缺失、负数或非有限值。
-- 决策：LightGBM 是下一步最值得提交验证的候选，但还不能仅凭本地验证替换 baseline；上传 Kaggle 后必须记录 public score。
+- Kaggle public score 为 `0.50834`，明显优于 baseline public score `0.58410`。
+- 决策：LightGBM baseline 成为当前 best submission；下一步围绕 LightGBM 做参数收缩、early stopping 或稳定性约束。

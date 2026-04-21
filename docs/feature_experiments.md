@@ -284,7 +284,7 @@ RMSLE 越低越好，因此这次 submission 比 baseline 更差。
 
 ### 下一步
 
-当前最佳提交仍是 baseline public score `0.58410`。
+当时最佳提交仍是 baseline public score `0.58410`。
 
 后续不继续沿 `school_supplies_aug_promo` 加强。更合理的下一步是：
 
@@ -435,7 +435,7 @@ Test distribution drift：
 - `seasonal_naive`：时间序列下限参照
 - `ridge_baseline`：线性模型参照
 - `histgbdt_compact`：更少 lag/window，检查是否更稳
-- `histgbdt_baseline`：当前最佳提交方案
+- `histgbdt_baseline`：当时最佳提交方案
 - `histgbdt_extended`：更长 lag/window，检查全局长周期特征是否有效
 
 LightGBM 本轮没有运行，因为当前环境没有安装 `lightgbm`。
@@ -525,7 +525,7 @@ LightGBM 本轮仍未运行，原因是当前环境没有安装 `lightgbm`。因
 
 | Run | Mean RMSLE | Worst fold RMSLE | 判断 |
 | --- | ---: | ---: | --- |
-| `histgbdt_baseline` | 0.490514 | 0.656282 | 当前 best submission 对应方案 |
+| `histgbdt_baseline` | 0.490514 | 0.656282 | 原 best submission 对应方案 |
 | `histgbdt_extended` | 0.500922 | 0.633934 | mean 差，但 worst fold 更好 |
 | `blend_histgbdt_baseline_histgbdt_extended_base_w550` | 0.486839 | 0.645720 | mean 和 worst fold 都改善 |
 
@@ -595,7 +595,7 @@ PYTHONPATH=src python3 -m store_sales.cli run \
 | --- | ---: | ---: | --- |
 | `lightgbm_baseline` | 0.486767 | 0.583115 | 当前 mean 最好，worst fold 明显改善 |
 | `blend_histgbdt_baseline_histgbdt_extended_base_w550` | 0.486839 | 0.645720 | 略差于 LightGBM |
-| `histgbdt_baseline` | 0.490514 | 0.656282 | 当前 best submission 对应方案 |
+| `histgbdt_baseline` | 0.490514 | 0.656282 | 原 best submission 对应方案 |
 | `histgbdt_extended` | 0.500922 | 0.633934 | mean 差 |
 
 fold 级别：
@@ -624,10 +624,27 @@ LightGBM 的优点：
 判断：
 
 - LightGBM 是当前最值得继续推进的候选模型。
-- 但它还不能直接替换 baseline，因为 public-like stability checks 仍有风险。
 - 已生成 LightGBM candidate submission：`artifacts/submissions/lightgbm_baseline_v1/submission.csv`。
 - 该文件已通过本地格式校验：行数/id 顺序与 `sample_submission.csv` 一致，无重复、缺失、负数或非有限值。
-- 下一步应上传 Kaggle 记录 public score；上传前必须记住它是“有风险候选”，不是已经确认的新 best model。
+- Kaggle public score 为 `0.50834`，明显优于 baseline public score `0.58410`。
+- 因此 LightGBM 已成为当前 best submission。
+- 但 fold 1/2 回退和非目标切片风险仍然存在，后续优化不能只围绕 public score 继续盲目调参。
+
+### Kaggle public score
+
+| Submission | Local validation RMSLE | Kaggle public score | 判断 |
+| --- | ---: | ---: | --- |
+| `histgbdt_baseline` | 0.490514 | 0.58410 | 原 best |
+| `school_supplies_aug_promo` | 0.398186 | 0.59096 | 本地好但线上差，不保留 |
+| `lightgbm_baseline` | 0.486767 | 0.50834 | 当前 best |
+
+LightGBM 这次是一个正向结果：本地验证优于 baseline，Kaggle public 也明显优于 baseline。
+
+但注意：
+
+- 本地验证 mean 只改善 `0.003747`，public score 却改善 `0.07576`。
+- 这说明 public set 对 fold 3/4 或类似分布更敏感，也说明当前 validation-public 关系仍不完全稳定。
+- 后续要继续用 fold-level 和 slice-level 分析约束实验，而不是只按 public score 追方向。
 
 对应报告：
 

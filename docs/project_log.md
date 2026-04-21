@@ -447,7 +447,7 @@
 
 下一步：
 
-- 当前最佳提交仍是 baseline。
+- 当时最佳提交仍是 baseline。
 - 不继续沿 `school_supplies_aug_promo` 加强。
 - 后续优先改进验证设计，或尝试更稳健的模型/全局特征方案。
 
@@ -532,7 +532,7 @@
 结论：
 
 - 本轮没有发现比 `histgbdt_baseline` 更稳的全局特征或模型方案。
-- 不生成新的 Kaggle submission；当前 best submission 仍是 baseline public score `0.58410`。
+- 不生成新的 Kaggle submission；当时 best submission 仍是 baseline public score `0.58410`。
 - 下一步如果继续模型方向，应优先尝试 LightGBM，或做 baseline 与 seasonal/lag benchmark 的简单 blending。
 - 后续实验保留标准仍要结合 stability slice checks，不能只看 mean RMSLE。
 
@@ -570,7 +570,7 @@ stability checks：
 
 - `baseline + extended` blending 是一个有信号但有风险的 validation candidate。
 - 由于存在 fold 2 回退和 public-like 切片风险，本轮不生成 Kaggle submission。
-- 当前 best submission 仍是 baseline public score `0.58410`。
+- 当时 best submission 仍是 baseline public score `0.58410`。
 
 相关报告：
 
@@ -618,6 +618,20 @@ stability checks：
 
 - `reports/validation/august_lightgbm/validation_window_report.md`
 - `reports/validation/august_lightgbm/stability_slices/stability_slice_report.md`
+
+#### 阶段 24：LightGBM Kaggle public score
+
+- 提交文件：`artifacts/submissions/lightgbm_baseline_v1/submission.csv`。
+- Kaggle public score：`0.50834`。
+- 对比原 baseline public score：`0.58410`。
+- 对比 `school_supplies_aug_promo` public score：`0.59096`。
+
+结论：
+
+- LightGBM baseline 成为当前 best submission。
+- 本地 August / pre-test validation mean RMSLE 也支持这个方向：`0.486767` 优于 `histgbdt_baseline` 的 `0.490514`。
+- 但 LightGBM 在 fold 1/2 回退，且仍有非目标 family 和 test-overweighted regression slices 风险。
+- 下一步优化应围绕 LightGBM 做更稳健的参数收缩、early stopping 或 family/promotion 稳定性约束，而不是盲目增加复杂特征。
 
 ## 日志模板
 
