@@ -625,7 +625,9 @@ LightGBM 的优点：
 
 - LightGBM 是当前最值得继续推进的候选模型。
 - 但它还不能直接替换 baseline，因为 public-like stability checks 仍有风险。
-- 下一步可以生成 LightGBM submission 做 Kaggle public score 验证，但必须记录它是“有风险候选”，不是已经确认的新 best model。
+- 已生成 LightGBM candidate submission：`artifacts/submissions/lightgbm_baseline_v1/submission.csv`。
+- 该文件已通过本地格式校验：行数/id 顺序与 `sample_submission.csv` 一致，无重复、缺失、负数或非有限值。
+- 下一步应上传 Kaggle 记录 public score；上传前必须记住它是“有风险候选”，不是已经确认的新 best model。
 
 对应报告：
 

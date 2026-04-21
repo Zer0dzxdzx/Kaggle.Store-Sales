@@ -610,7 +610,9 @@ stability checks：
 
 - LightGBM 是当前最有价值的新候选模型。
 - 但由于 fold 1/2 回退和非目标切片风险，本轮还不直接替换 baseline。
-- 下一步如果要验证 leaderboard，应生成 LightGBM submission 并记录 Kaggle public score。
+- 已生成 LightGBM candidate submission：`artifacts/submissions/lightgbm_baseline_v1/submission.csv`。
+- submission 已通过本地格式校验：行数/id 顺序与 `sample_submission.csv` 一致，无重复、缺失、负数或非有限值。
+- 下一步应上传 Kaggle 并记录 public score，再决定是否替换 baseline。
 
 相关报告：
 

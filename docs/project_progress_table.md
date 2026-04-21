@@ -201,4 +201,6 @@
 - worst fold 从 baseline `0.656282` 降到 `0.583115`，改善明显。
 - 但 fold 1/2 分别回退 `+0.048240` 和 `+0.040950`。
 - stability checks 显示 target family 和 non-target overall 都改善，但仍有 `13` 个非目标 family 变差，以及 `8` 个 test-overweighted non-target regression slices。
-- 决策：LightGBM 是下一步最值得提交验证的候选，但还不能仅凭本地验证替换 baseline；如果生成 submission，必须记录为“有风险候选”。
+- 已生成 candidate submission：`artifacts/submissions/lightgbm_baseline_v1/submission.csv`。
+- submission 已通过本地格式校验：行数/id 顺序与 `sample_submission.csv` 一致，无重复、缺失、负数或非有限值。
+- 决策：LightGBM 是下一步最值得提交验证的候选，但还不能仅凭本地验证替换 baseline；上传 Kaggle 后必须记录 public score。
