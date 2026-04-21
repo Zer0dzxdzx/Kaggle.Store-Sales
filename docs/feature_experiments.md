@@ -425,3 +425,49 @@ Test distribution drift：
 - `reports/validation/august_windows/stability_slices/tables/overweighted_non_target_regressions.csv`
 - `reports/validation/august_windows/stability_slices/tables/family_comparison.csv`
 - `reports/validation/august_windows/stability_slices/tables/promotion_bin_comparison.csv`
+
+## 全局模型 / 特征对比
+
+### 目的
+
+在确认 `school_supplies_aug_promo` 这种局部补丁不可取后，下一步检查更稳健的全局方案：
+
+- `seasonal_naive`：时间序列下限参照
+- `ridge_baseline`：线性模型参照
+- `histgbdt_compact`：更少 lag/window，检查是否更稳
+- `histgbdt_baseline`：当前最佳提交方案
+- `histgbdt_extended`：更长 lag/window，检查全局长周期特征是否有效
+
+LightGBM 本轮没有运行，因为当前环境没有安装 `lightgbm`。
+
+### August / pre-test windows 结果
+
+| Run | Mean RMSLE | Worst fold RMSLE | 判断 |
+| --- | ---: | ---: | --- |
+| `histgbdt_baseline` | 0.490514 | 0.656282 | 当前最稳 |
+| `histgbdt_compact` | 0.492959 | 0.666164 | fold 1 好，但整体差 |
+| `histgbdt_extended` | 0.500922 | 0.633934 | fold 1/3/4 好，但 fold 2 大幅变差 |
+| `seasonal_naive` | 0.624068 | 0.821798 | 只作参照 |
+| `ridge_baseline` | 2.892314 | 3.042849 | 不适合当前特征编码 |
+
+### 判断
+
+本轮没有发现比 baseline 更稳的全局模型或特征方案。
+
+关键原因：
+
+- `compact` 少特征后，fold 1 变好，但 2015/2016/pre-test fold 变差，说明不是更稳。
+- `extended` 加长 lag/window 后，fold 2 明显变差，说明长周期特征并没有稳定收益。
+- `ridge` 在 ordinal categorical encoding 下表现很差，不适合当前 pipeline。
+- `seasonal_naive` 远弱于 tree baseline，但可以作为 blending 的下限参照。
+
+下一步如果继续提高分数，应优先：
+
+- 尝试 LightGBM，并用相同 stability checks 判断是否真的稳。
+- 或尝试 baseline 与 seasonal/lag benchmark 的简单 blending，减少 tree model 在局部切片上的过激预测。
+
+对应报告：
+
+- `reports/validation/august_global_models/validation_window_report.md`
+- `reports/validation/august_global_models/run_summary.csv`
+- `reports/validation/august_global_models/fold_comparison.csv`

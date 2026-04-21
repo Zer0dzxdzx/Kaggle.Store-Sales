@@ -171,3 +171,14 @@
 - 但有 `16` 个非目标 family 变差，包括 `DELI`、`MAGAZINES`、`CLEANING`、`BEVERAGES`。
 - test 中部分真实变差的 family-promotion 切片占比更高，例如 `PERSONAL CARE + 11-50`、`DAIRY + 11-50`、`BREAD/BAKERY + 11-50`。
 - 决策：后续实验保留规则要加入 non-target regression count、promotion bin regression、test-overweighted regression slices，不能只看 mean RMSLE。
+
+阶段 5 global model / feature comparison 已完成：
+
+- 对比对象包括 `seasonal_naive`、`ridge_baseline`、`histgbdt_compact`、`histgbdt_baseline`、`histgbdt_extended`。
+- 使用同一组 August / pre-test explicit windows，保证和前面的失败实验诊断在同一验证框架下比较。
+- `histgbdt_baseline` mean RMSLE 为 `0.490514`，仍是当前最稳方案。
+- `histgbdt_compact` mean RMSLE 为 `0.492959`，fold 1 改善但 fold 2/3/4 变差。
+- `histgbdt_extended` mean RMSLE 为 `0.500922`，fold 1/3/4 改善但 fold 2 大幅变差。
+- `seasonal_naive` 和 `ridge_baseline` 明显弱于 tree baseline，只能作为参考。
+- LightGBM 本轮未运行，因为当前环境没有安装 `lightgbm`。
+- 决策：不替换 baseline，不生成新提交；下一步优先尝试 LightGBM 或简单 blending，并继续用 stability slice checks 作为保留门槛。

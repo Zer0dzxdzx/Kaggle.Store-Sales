@@ -509,6 +509,37 @@
 
 - `reports/validation/august_windows/stability_slices/stability_slice_report.md`
 
+#### 阶段 21：global model / feature comparison
+
+- 目标：在放弃 `school_supplies_aug_promo` 局部补丁后，检查是否存在更稳健的全局特征或模型方案。
+- 对比对象：
+  - `seasonal_naive`
+  - `ridge_baseline`
+  - `histgbdt_compact`
+  - `histgbdt_baseline`
+  - `histgbdt_extended`
+- 验证方式：继续使用 August / pre-test explicit windows，并保持 `train_start_date=2013-01-01` 与 16 天 recursive forecast。
+- LightGBM 本轮没有运行，因为当前环境没有安装 `lightgbm`。
+
+结果：
+
+- `histgbdt_baseline` mean RMSLE：`0.490514`，仍是当前最稳方案。
+- `histgbdt_compact` mean RMSLE：`0.492959`，fold 1 变好，但 fold 2/3/4 变差。
+- `histgbdt_extended` mean RMSLE：`0.500922`，fold 1/3/4 变好，但 fold 2 大幅变差。
+- `seasonal_naive` mean RMSLE：`0.624068`，弱于 tree baseline，只能作为参照或后续 blending 候选。
+- `ridge_baseline` mean RMSLE：`2.892314`，在当前 ordinal categorical encoding + linear setup 下不可用。
+
+结论：
+
+- 本轮没有发现比 `histgbdt_baseline` 更稳的全局特征或模型方案。
+- 不生成新的 Kaggle submission；当前 best submission 仍是 baseline public score `0.58410`。
+- 下一步如果继续模型方向，应优先尝试 LightGBM，或做 baseline 与 seasonal/lag benchmark 的简单 blending。
+- 后续实验保留标准仍要结合 stability slice checks，不能只看 mean RMSLE。
+
+相关报告：
+
+- `reports/validation/august_global_models/validation_window_report.md`
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：

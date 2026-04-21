@@ -1,0 +1,6 @@
+run_name,validation_rmsle_mean,validation_rmsle_std,validation_rmsle_min,validation_rmsle_max,worst_fold_id,train_rows_min,train_rows_max,artifacts_dir
+histgbdt_baseline,0.49051390384131166,0.10030169871384348,0.3946807938010644,0.6562818871893319,3,1053162,2972376,artifacts/validation/august_windows/histgbdt_baseline
+histgbdt_compact,0.4929591769278385,0.10854278699965379,0.3721938549088497,0.6661635165663733,3,1053162,2972376,artifacts/validation/august_windows/histgbdt_compact
+histgbdt_extended,0.5009215692647794,0.1001650273848741,0.3837938720713462,0.6339339302998009,3,1053162,2972376,artifacts/validation/august_windows/histgbdt_extended
+seasonal_naive,0.6240680318889706,0.13449348730708863,0.4723967575807239,0.8217982770493859,3,1053162,2972376,artifacts/validation/august_windows/seasonal_naive
+ridge_baseline,2.8923136796203024,0.13326057162791377,2.683288372584494,3.042849394492232,2,1053162,2972376,artifacts/validation/august_windows/ridge_baseline
