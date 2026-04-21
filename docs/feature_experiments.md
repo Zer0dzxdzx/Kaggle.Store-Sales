@@ -198,3 +198,102 @@ fold 3 交叉误差分析已经把最大问题定位到 `SCHOOL AND OFFICE SUPPL
 - `reports/family_focus/school_office_supplies/family_focus_report.md`
 - `reports/family_focus/school_office_supplies/tables/family_fold3_new_store_promotion_segments.csv`
 - `reports/family_focus/school_office_supplies/tables/test_promotion_risk_overlap.csv`
+
+## 实验 2：School Supplies August/Promotion v1
+
+### 实验假设
+
+`SCHOOL AND OFFICE SUPPLIES` 在 fold 3 的主要问题不是低需求，而是模型没有学好该 family 在 8 月、high promotion、type A / Quito-Ambato store 片段的 uplift。
+
+因此本实验只做窄特征，不换模型、不加入 broad low-demand features。
+
+### 改动内容
+
+新增 `school_supplies_aug_promo` feature profile，在 baseline 特征基础上加入：
+
+- `is_school_supplies`
+- `school_supplies_august`
+- `school_supplies_onpromotion`
+- `school_supplies_onpromotion_log1p`
+- `school_supplies_promo_6_plus`
+- `school_supplies_promo_11_50`
+- `school_supplies_type_a`
+- `school_supplies_quito_ambato`
+- `school_supplies_type_a_high_promo`
+- `school_supplies_quito_ambato_high_promo`
+- `school_supplies_august_high_promo`
+- `school_supplies_august_type_a`
+
+防泄漏原则：
+
+- 这些特征只使用 `date/month`、`family`、`onpromotion`、`store_type`、`city`。
+- 这些信息在 validation/test 预测时已知。
+- 不使用 validation/test 真实 `sales`。
+
+验证偏差风险：
+
+- 这组特征是在 fold 3 cross-error analysis 之后设计的，因此 fold 3 改善不能单独作为“已经泛化”的证据。
+- 当前结论只能说它是一个 candidate profile。
+- 提交前需要用 Kaggle public score，或额外未参与特征设计的 rolling windows，继续确认是否只是贴合本地 fold 3。
+
+### 验证结果
+
+| 指标 | Baseline | School supplies v1 | Delta |
+| --- | ---: | ---: | ---: |
+| Mean RMSLE | 0.401601 | 0.398186 | -0.003415 |
+| Fold 1 RMSLE | 0.381085 | 0.381600 | +0.000515 |
+| Fold 2 RMSLE | 0.400716 | 0.400273 | -0.000443 |
+| Fold 3 RMSLE | 0.423002 | 0.412684 | -0.010318 |
+| `SCHOOL AND OFFICE SUPPLIES` fold 3 RMSLE | 0.866511 | 0.688222 | -0.178289 |
+
+### Target segment 检查
+
+| Segment | Baseline predicted mean | Experiment predicted mean | Actual mean | RMSLE delta |
+| --- | ---: | ---: | ---: | ---: |
+| store `47` + promotion bin `11-50` | 33.6 | 96.8 | 538.4 | -0.856766 |
+| store `44` + promotion bin `11-50` | 27.0 | 75.4 | 414.2 | -0.835630 |
+| store `48` + promotion bin `11-50` | 35.4 | 93.6 | 464.8 | -0.838183 |
+| store `50` + promotion bin `11-50` | 48.6 | 135.2 | 416.0 | -0.737156 |
+
+### 判断
+
+保留为 candidate profile，但暂时不替换默认 baseline。
+
+原因：
+
+- mean RMSLE 比 baseline 更好。
+- fold 3 明显改善，且 fold 3 最接近 Kaggle test period。
+- `SCHOOL AND OFFICE SUPPLIES` fold 3 大幅改善。
+- high-promotion store segments 的 underprediction 被缓解。
+- 但本实验还没有生成 Kaggle submission，不能确认 public score 是否同步改善。
+- 由于特征设计来自 fold 3 错误分析，存在 validation selection bias，不能只看 fold 3 改善就替换默认方案。
+
+### 下一步
+
+下一步应该用 `school_supplies_aug_promo` 生成 submission 并提交 Kaggle，对比当前 baseline public score `0.58410`。
+
+如果 public score 改善，再考虑把它作为新的候选提交方案；如果 public score 没改善，则说明该实验可能过拟合本地 fold 3。
+
+对应报告：
+
+- `reports/feature_experiments/school_supplies_aug_promo_v1/experiment_report.md`
+- `reports/feature_experiments/school_supplies_aug_promo_v1/tables/validation_comparison.csv`
+- `reports/feature_experiments/school_supplies_aug_promo_v1/tables/target_family_fold_comparison.csv`
+- `reports/feature_experiments/school_supplies_aug_promo_v1/tables/target_fold_store_promotion_comparison.csv`
+
+报告复现命令：
+
+```bash
+PYTHONPATH=src python3 -m store_sales.feature_experiment_report \
+  --data-dir data/raw \
+  --baseline-artifacts-dir artifacts/experiments/histgbdt_baseline \
+  --experiment-artifacts-dir artifacts/experiments/histgbdt_school_supplies_aug_promo_v1 \
+  --output-dir reports/feature_experiments/school_supplies_aug_promo_v1 \
+  --baseline-name histgbdt_baseline \
+  --experiment-name histgbdt_school_supplies_aug_promo_v1 \
+  --feature-profile school_supplies_aug_promo \
+  --baseline-public-score 0.58410 \
+  --family "SCHOOL AND OFFICE SUPPLIES" \
+  --target-fold 3 \
+  --min-rows 4
+```

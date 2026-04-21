@@ -171,7 +171,7 @@ def append_experiment_log(path: Path, row: dict[str, str]) -> None:
     file_exists = path.exists() and path.stat().st_size > 0
 
     with path.open("a", encoding="utf-8", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=EXPERIMENT_LOG_COLUMNS)
+        writer = csv.DictWriter(file, fieldnames=EXPERIMENT_LOG_COLUMNS, lineterminator="\n")
         if not file_exists:
             writer.writeheader()
         writer.writerow({column: row.get(column, "") for column in EXPERIMENT_LOG_COLUMNS})

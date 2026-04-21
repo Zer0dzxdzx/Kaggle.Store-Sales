@@ -409,6 +409,29 @@
 - “开学季”只能作为待验证假设，不能直接写成已证明的外部原因。
 - 外部业务原因仍不能直接下结论；报告只证明数据模式和模型误差集中位置。
 
+#### 阶段 17：特征实验 2，school supplies August/promotion features
+
+- 新增 `school_supplies_aug_promo` feature profile。
+- 新增 `src/store_sales/feature_experiment_report.py`，用于对比 baseline 与 feature experiment 的 validation、target family 和 fold 3 store-promotion 误差。
+- 运行 3 窗口验证，输出目录为 `artifacts/experiments/histgbdt_school_supplies_aug_promo_v1`。
+- 生成 `reports/feature_experiments/school_supplies_aug_promo_v1/experiment_report.md` 和对应 CSV 表。
+
+结果：
+
+- baseline mean RMSLE：`0.401601`。
+- school supplies v1 mean RMSLE：`0.398186`。
+- baseline fold 3 RMSLE：`0.423002`。
+- school supplies v1 fold 3 RMSLE：`0.412684`。
+- `SCHOOL AND OFFICE SUPPLIES` fold 3 RMSLE 从 `0.866511` 降到 `0.688222`。
+- store `47` + promotion bin `11-50` 的 predicted mean 从 `33.6` 提高到 `96.8`，actual mean 为 `538.4`。
+
+结论：
+
+- 当前本地验证结果支持 targeted feature 比 broad low-demand 更值得作为候选方向。
+- 该 profile 可以保留为 candidate，但不能直接替换 default baseline。
+- 下一步应生成该 profile 的 submission，提交 Kaggle 并和 baseline public score `0.58410` 对比。
+- 由于特征设计来自 fold 3 错误分析，需要警惕 validation selection bias；如果 public score 不改善，说明它可能只是贴合本地 fold 3。
+
 ## 日志模板
 
 后续可以直接复制下面这段继续追加：
