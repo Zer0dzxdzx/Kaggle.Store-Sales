@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from store_sales.config import PipelineConfig
@@ -53,6 +54,45 @@ def split_train_validation(train: pd.DataFrame, config: PipelineConfig) -> tuple
     train_part = train[train["date"] < validation_start].copy()
     validation_part = train[train["date"] >= validation_start].copy()
     return train_part.reset_index(drop=True), validation_part.reset_index(drop=True)
+
+
+def build_submission_frame(submission_predictions: pd.DataFrame, sample_submission_path: Path) -> pd.DataFrame:
+    if not sample_submission_path.exists():
+        raise FileNotFoundError(f"Missing sample submission file: {sample_submission_path}")
+
+    submission = submission_predictions[["id", "sales_pred"]].rename(columns={"sales_pred": "sales"}).copy()
+    if submission["id"].duplicated().any():
+        duplicated_ids = submission.loc[submission["id"].duplicated(), "id"].head(10).tolist()
+        raise ValueError(f"Submission predictions contain duplicate ids: {duplicated_ids}")
+
+    sample_submission = pd.read_csv(sample_submission_path, usecols=["id"], dtype={"id": "int64"})
+    if sample_submission["id"].duplicated().any():
+        duplicated_ids = sample_submission.loc[sample_submission["id"].duplicated(), "id"].head(10).tolist()
+        raise ValueError(f"sample_submission.csv contains duplicate ids: {duplicated_ids}")
+
+    submission_ids = set(submission["id"])
+    sample_ids = set(sample_submission["id"])
+    missing_ids = sample_ids.difference(submission_ids)
+    extra_ids = submission_ids.difference(sample_ids)
+    if missing_ids or extra_ids:
+        raise ValueError(
+            "Submission ids do not match sample_submission.csv: "
+            f"missing={sorted(missing_ids)[:10]}, extra={sorted(extra_ids)[:10]}"
+        )
+
+    submission = sample_submission.merge(submission, on="id", how="left", validate="one_to_one")
+
+    if submission["sales"].isna().any():
+        missing_count = int(submission["sales"].isna().sum())
+        raise ValueError(f"Submission contains {missing_count} missing sales predictions.")
+
+    sales_values = submission["sales"].to_numpy(dtype=float)
+    if not np.isfinite(sales_values).all():
+        invalid_rows = submission.loc[~np.isfinite(sales_values), ["id", "sales"]].head(10)
+        raise ValueError(f"Submission contains non-finite sales predictions:\n{invalid_rows.to_string(index=False)}")
+
+    submission["sales"] = submission["sales"].clip(lower=0.0)
+    return submission
 
 
 def build_validation_windows(train: pd.DataFrame, config: PipelineConfig) -> list[ValidationWindow]:
@@ -275,10 +315,8 @@ def run_pipeline(config: PipelineConfig) -> PipelineOutputs:
         )
 
         submission_path = config.output_dir / "submission.csv"
-        submission_predictions[["id", "sales_pred"]].rename(columns={"sales_pred": "sales"}).to_csv(
-            submission_path,
-            index=False,
-        )
+        submission = build_submission_frame(submission_predictions, config.data_dir / "sample_submission.csv")
+        submission.to_csv(submission_path, index=False)
 
     return PipelineOutputs(
         validation_score=validation_score,
