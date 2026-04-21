@@ -96,6 +96,9 @@ def build_submission_frame(submission_predictions: pd.DataFrame, sample_submissi
 
 
 def build_validation_windows(train: pd.DataFrame, config: PipelineConfig) -> list[ValidationWindow]:
+    if config.validation_window_dates:
+        return build_explicit_validation_windows(train, config)
+
     if config.validation_windows < 1:
         raise ValueError("validation_windows must be at least 1.")
 
@@ -123,6 +126,54 @@ def build_validation_windows(train: pd.DataFrame, config: PipelineConfig) -> lis
         end_exclusive -= step_days
 
     windows.reverse()
+    return [
+        ValidationWindow(
+            fold_id=index,
+            validation_start=validation_start,
+            validation_end=validation_end,
+        )
+        for index, (validation_start, validation_end) in enumerate(windows, start=1)
+    ]
+
+
+def build_explicit_validation_windows(train: pd.DataFrame, config: PipelineConfig) -> list[ValidationWindow]:
+    if config.validation_horizon < 1:
+        raise ValueError("validation_horizon must be at least 1.")
+
+    unique_dates = sorted(pd.Timestamp(date_value) for date_value in train["date"].unique())
+    available_dates = set(unique_dates)
+    windows: list[tuple[pd.Timestamp, pd.Timestamp]] = []
+    seen_validation_dates: set[pd.Timestamp] = set()
+
+    for raw_start, raw_end in config.validation_window_dates:
+        validation_start = pd.Timestamp(raw_start)
+        validation_end = pd.Timestamp(raw_end)
+        if validation_start > validation_end:
+            raise ValueError(
+                f"Validation window start must be <= end: {raw_start}:{raw_end}."
+            )
+        if validation_start not in available_dates or validation_end not in available_dates:
+            raise ValueError(
+                f"Validation window {raw_start}:{raw_end} is outside the filtered training dates. "
+                "Use an earlier --train-start-date or choose dates inside train.csv."
+            )
+
+        window_dates = [date_value for date_value in unique_dates if validation_start <= date_value <= validation_end]
+        if len(window_dates) != config.validation_horizon:
+            raise ValueError(
+                f"Validation window {raw_start}:{raw_end} contains {len(window_dates)} available dates, "
+                f"but validation_horizon is {config.validation_horizon}."
+            )
+        overlapping_dates = seen_validation_dates.intersection(window_dates)
+        if overlapping_dates:
+            sample_dates = [date_value.date().isoformat() for date_value in sorted(overlapping_dates)[:5]]
+            raise ValueError(
+                f"Validation window {raw_start}:{raw_end} overlaps with an earlier explicit window: {sample_dates}"
+            )
+        seen_validation_dates.update(window_dates)
+        windows.append((validation_start, validation_end))
+
+    windows = sorted(windows, key=lambda item: item[0])
     return [
         ValidationWindow(
             fold_id=index,
@@ -295,6 +346,10 @@ def run_pipeline(config: PipelineConfig) -> PipelineOutputs:
             "validation_horizon_days": config.validation_horizon,
             "validation_windows": config.validation_windows,
             "validation_step_days": config.validation_step_days or config.validation_horizon,
+            "validation_window_dates": [
+                {"validation_start": start, "validation_end": end}
+                for start, end in config.validation_window_dates
+            ],
             "model_type": config.model_type,
             "feature_profile": config.feature_profile,
             "train_rows": int(latest_fold["train_rows"]),

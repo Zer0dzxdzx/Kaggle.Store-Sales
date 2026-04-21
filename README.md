@@ -87,11 +87,42 @@ python3 -m store_sales.cli run \
 
 - 默认本地验证窗口为训练集最后 `16` 天，作为回测起点；你可以通过 `--validation-horizon` 自行调整。
 - 可通过 `--validation-windows` 开启多窗口验证，`--validation-step-days` 控制相邻验证窗口之间的步长。
+- 可通过重复传入 `--validation-window YYYY-MM-DD:YYYY-MM-DD` 指定显式验证窗口；这会覆盖默认 rolling windows，适合做历史同季验证。
 - 训练目标做了 `log1p` 变换，预测后再 `expm1` 还原，并裁剪为非负值。
 - 如果环境里装了 `lightgbm`，可以改成 `--model-type lightgbm`。
 - 可通过 `--feature-profile compact|baseline|extended|low_demand|school_supplies_aug_promo` 切换特征工程方案。
 - `low_demand` 会在 baseline 特征基础上增加 family 和 store-family 历史低需求统计特征。
 - `school_supplies_aug_promo` 会在 baseline 特征基础上增加 `SCHOOL AND OFFICE SUPPLIES` 的 8 月、promotion 和 store 交互特征。
+
+### August / pre-test historical validation
+
+用于检查模型是否能泛化到测试期相近的时间位置。前三个窗口是历史年份的 8 月下半月；最后一个窗口是 2017 年测试期前的 pre-test holdout，因为训练集没有 `2017-08-16` 之后的真实 `sales`。
+
+```bash
+PYTHONPATH=src python3 -m store_sales.cli run \
+  --data-dir data/raw \
+  --output-dir artifacts/validation/august_windows/histgbdt_baseline \
+  --train-start-date 2013-01-01 \
+  --validation-horizon 16 \
+  --validation-window 2014-08-16:2014-08-31 \
+  --validation-window 2015-08-16:2015-08-31 \
+  --validation-window 2016-08-16:2016-08-31 \
+  --validation-window 2017-07-31:2017-08-15 \
+  --feature-profile baseline \
+  --model-type hist_gbdt \
+  --skip-submission
+```
+
+比较多个 run 的报告命令：
+
+```bash
+PYTHONPATH=src python3 -m store_sales.validation_window_report \
+  --output-dir reports/validation/august_windows \
+  --baseline-name histgbdt_baseline \
+  --title "August / Pre-Test Validation Windows" \
+  --run histgbdt_baseline=artifacts/validation/august_windows/histgbdt_baseline \
+  --run histgbdt_school_supplies_aug_promo=artifacts/validation/august_windows/histgbdt_school_supplies_aug_promo
+```
 
 ## 模型对比
 

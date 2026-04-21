@@ -86,6 +86,7 @@ def build_experiment_config(
     validation_step_days: int | None,
     random_state: int,
     make_submission: bool,
+    validation_window_dates: tuple[tuple[str, str], ...] = (),
 ) -> PipelineConfig:
     config = PipelineConfig(
         data_dir=data_dir,
@@ -94,6 +95,7 @@ def build_experiment_config(
         validation_horizon=validation_horizon,
         validation_windows=validation_windows,
         validation_step_days=validation_step_days,
+        validation_window_dates=validation_window_dates,
         model_type=spec.model_type,
         feature_profile=spec.feature_profile,
         random_state=random_state,
@@ -118,6 +120,9 @@ def build_comparison_row(
         "validation_horizon": config.validation_horizon,
         "validation_windows": config.validation_windows,
         "validation_step_days": config.validation_step_days or config.validation_horizon,
+        "validation_window_dates": "|".join(
+            f"{start}:{end}" for start, end in config.validation_window_dates
+        ),
         "validation_rmsle_mean": float(scores.mean()),
         "validation_rmsle_std": float(scores.std(ddof=0)),
         "validation_rmsle_min": float(scores.min()),
@@ -158,6 +163,7 @@ def write_comparison_report(results: pd.DataFrame, report_dir: Path) -> tuple[Pa
         "validation_rmsle_std",
         "validation_rmsle_min",
         "validation_rmsle_max",
+        "validation_window_dates",
     ]
     lines = [
         "# Model Comparison Report",
@@ -206,6 +212,7 @@ def run_experiment_suite(
     make_submission: bool,
     log_experiments: bool,
     experiment_log_path: Path,
+    validation_window_dates: tuple[tuple[str, str], ...] = (),
 ) -> pd.DataFrame:
     _validate_experiment_names(experiment_names)
     if not available_feature_profiles():
@@ -224,6 +231,7 @@ def run_experiment_suite(
             validation_step_days=validation_step_days,
             random_state=random_state,
             make_submission=make_submission,
+            validation_window_dates=validation_window_dates,
         )
         outputs = run_pipeline(config)
         validation_summary = pd.read_csv(outputs.validation_summary_path)

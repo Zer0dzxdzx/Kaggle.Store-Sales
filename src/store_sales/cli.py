@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date
 from pathlib import Path
 
 from store_sales.config import PipelineConfig
@@ -8,6 +9,32 @@ from store_sales.experiment_log import append_experiment_log, build_experiment_l
 from store_sales.experiment_runner import available_experiments, run_experiment_suite
 from store_sales.feature_profiles import apply_feature_profile, available_feature_profiles
 from store_sales.pipeline import run_pipeline
+
+
+def parse_validation_window_dates(values: list[str] | None) -> tuple[tuple[str, str], ...]:
+    if not values:
+        return ()
+
+    windows = []
+    for value in values:
+        if ":" not in value:
+            raise argparse.ArgumentTypeError(
+                f"Invalid validation window `{value}`. Expected format: YYYY-MM-DD:YYYY-MM-DD."
+            )
+        raw_start, raw_end = value.split(":", maxsplit=1)
+        try:
+            start_date = date.fromisoformat(raw_start)
+            end_date = date.fromisoformat(raw_end)
+        except ValueError as exc:
+            raise argparse.ArgumentTypeError(
+                f"Invalid validation window `{value}`. Expected ISO dates: YYYY-MM-DD:YYYY-MM-DD."
+            ) from exc
+        if start_date > end_date:
+            raise argparse.ArgumentTypeError(
+                f"Invalid validation window `{value}`. Start date must be <= end date."
+            )
+        windows.append((start_date.isoformat(), end_date.isoformat()))
+    return tuple(windows)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -21,6 +48,15 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument("--validation-horizon", type=int, default=16)
     run_parser.add_argument("--validation-windows", type=int, default=1)
     run_parser.add_argument("--validation-step-days", type=int, default=None)
+    run_parser.add_argument(
+        "--validation-window",
+        action="append",
+        default=None,
+        help=(
+            "Explicit inclusive validation window in YYYY-MM-DD:YYYY-MM-DD format. "
+            "Can be repeated; overrides rolling validation window generation."
+        ),
+    )
     run_parser.add_argument("--model-type", choices=["seasonal_naive", "ridge", "hist_gbdt", "lightgbm"], default="hist_gbdt")
     run_parser.add_argument("--feature-profile", choices=available_feature_profiles(), default="baseline")
     run_parser.add_argument("--random-state", type=int, default=42)
@@ -45,6 +81,15 @@ def build_parser() -> argparse.ArgumentParser:
     compare_parser.add_argument("--validation-horizon", type=int, default=16)
     compare_parser.add_argument("--validation-windows", type=int, default=3)
     compare_parser.add_argument("--validation-step-days", type=int, default=16)
+    compare_parser.add_argument(
+        "--validation-window",
+        action="append",
+        default=None,
+        help=(
+            "Explicit inclusive validation window in YYYY-MM-DD:YYYY-MM-DD format. "
+            "Can be repeated; overrides rolling validation window generation."
+        ),
+    )
     compare_parser.add_argument("--random-state", type=int, default=42)
     compare_parser.add_argument("--include-submission", action="store_true")
     compare_parser.add_argument("--log-experiments", action="store_true")
@@ -57,13 +102,18 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "run":
+        try:
+            validation_window_dates = parse_validation_window_dates(args.validation_window)
+        except argparse.ArgumentTypeError as exc:
+            parser.error(str(exc))
         config = PipelineConfig(
             data_dir=args.data_dir,
             output_dir=args.output_dir,
             train_start_date=args.train_start_date,
             validation_horizon=args.validation_horizon,
-            validation_windows=args.validation_windows,
+            validation_windows=len(validation_window_dates) or args.validation_windows,
             validation_step_days=args.validation_step_days,
+            validation_window_dates=validation_window_dates,
             model_type=args.model_type,
             feature_profile=args.feature_profile,
             random_state=args.random_state,
@@ -95,14 +145,19 @@ def main() -> None:
         return
 
     if args.command == "compare":
+        try:
+            validation_window_dates = parse_validation_window_dates(args.validation_window)
+        except argparse.ArgumentTypeError as exc:
+            parser.error(str(exc))
         results = run_experiment_suite(
             data_dir=args.data_dir,
             output_dir=args.output_dir,
             report_dir=args.report_dir,
             experiment_names=args.experiments,
             validation_horizon=args.validation_horizon,
-            validation_windows=args.validation_windows,
+            validation_windows=len(validation_window_dates) or args.validation_windows,
             validation_step_days=args.validation_step_days,
+            validation_window_dates=validation_window_dates,
             random_state=args.random_state,
             make_submission=args.include_submission,
             log_experiments=args.log_experiments,

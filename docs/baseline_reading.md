@@ -220,10 +220,13 @@ validation_step_days = 16
 
 得到 3 个不重叠的 16 天验证窗口。
 
+也可以用 `--validation-window YYYY-MM-DD:YYYY-MM-DD` 指定显式验证窗口。例如 August historical validation 会指定历史年份的 `08-16` 到 `08-31`，用于检查模型是否真的能泛化到测试期同样的“8 月下半月”时间位置。
+
 判断：
 
 - 这是时间序列验证，不是随机切分。
 - 它更接近真实测试场景。
+- 显式历史窗口可以帮助识别 validation selection bias：如果某个特征只改善当前 fold，却不能改善历史同季窗口，就不应该直接提交。
 
 ### 3.2 单个 fold 如何训练
 

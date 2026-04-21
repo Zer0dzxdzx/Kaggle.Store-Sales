@@ -114,6 +114,10 @@ def build_feature_summary(config: PipelineConfig) -> str:
 
 
 def build_validation_scheme(config: PipelineConfig) -> str:
+    if config.validation_window_dates:
+        windows = "|".join(f"{start}:{end}" for start, end in config.validation_window_dates)
+        return f"time split + recursive forecast; explicit_windows={windows}"
+
     step_days = config.validation_step_days or config.validation_horizon
     return (
         f"time split + recursive forecast; windows={config.validation_windows}; "

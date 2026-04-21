@@ -12,6 +12,7 @@ class PipelineConfig:
     validation_horizon: int = 16
     validation_windows: int = 1
     validation_step_days: int | None = None
+    validation_window_dates: tuple[tuple[str, str], ...] = ()
     model_type: str = "hist_gbdt"
     feature_profile: str = "baseline"
     demand_features: bool = False
