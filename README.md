@@ -16,6 +16,7 @@ EDA 解读记录见 [docs/eda_interpretation.md](docs/eda_interpretation.md)。
 误差分析阅读记录见 [docs/error_analysis_reading.md](docs/error_analysis_reading.md)。
 特征实验记录见 [docs/feature_experiments.md](docs/feature_experiments.md)。
 结构化实验日志见 [docs/experiment_log.csv](docs/experiment_log.csv)。
+简历深挖与面试准备文档见 [docs/interview_deep_dive.md](docs/interview_deep_dive.md)。
 
 ## 目录结构
 
