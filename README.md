@@ -1,22 +1,32 @@
-# Store Sales Baseline
+# Store Sales Project
 
-这是一个面向 Kaggle `Store Sales - Time Series Forecasting` 比赛的可运行基线项目，重点是：
+这是一个面向 Kaggle `Store Sales - Time Series Forecasting` 比赛的可复现时间序列项目，当前已经从工程 baseline 迭代到带验证、分析、实验日志和提交复盘的数据科学项目。
 
 - 模块化的数据读取、特征工程、验证与预测流程
-- 使用最后一个预测窗口做贴近比赛场景的递归验证
-- 默认使用 `scikit-learn` 的 `HistGradientBoostingRegressor`
-- 预留 `LightGBM` 后端接口，后续可直接在 Kaggle Notebook 切换
+- 多窗口与显式时间窗口的递归验证
+- `HistGradientBoostingRegressor` 与 `LightGBM` 两套主模型路径
+- EDA、误差分析、稳定性检查和实验日志闭环
 
-比赛题目解读与详细说明见 [docs/store_sales_competition_guide.md](docs/store_sales_competition_guide.md)。
-项目执行过程记录见 [docs/project_log.md](docs/project_log.md)。
-学习进程表见 [docs/project_progress_table.md](docs/project_progress_table.md)。
-数据表阅读记录见 [docs/data_tables_reading.md](docs/data_tables_reading.md)。
-Baseline 阅读记录见 [docs/baseline_reading.md](docs/baseline_reading.md)。
-EDA 解读记录见 [docs/eda_interpretation.md](docs/eda_interpretation.md)。
-误差分析阅读记录见 [docs/error_analysis_reading.md](docs/error_analysis_reading.md)。
-特征实验记录见 [docs/feature_experiments.md](docs/feature_experiments.md)。
-结构化实验日志见 [docs/experiment_log.csv](docs/experiment_log.csv)。
-简历深挖与面试准备文档见 [docs/interview_deep_dive.md](docs/interview_deep_dive.md)。
+## 当前状态
+
+- 当前 best public submission：`LightGBM baseline = 0.50834`
+- 原 HistGBDT baseline public score：`0.58410`
+- 当前主验证框架：`August / pre-test explicit windows + stability checks`
+- 当前下一步主线：固化验证协议与 submission gate，然后继续做 LightGBM 稳定性优化
+
+## 文档导航
+
+- 比赛题目解读与详细说明：[docs/store_sales_competition_guide.md](docs/store_sales_competition_guide.md)
+- 项目执行过程记录：[docs/project_log.md](docs/project_log.md)
+- 学习进程表：[docs/project_progress_table.md](docs/project_progress_table.md)
+- 数据表阅读记录：[docs/data_tables_reading.md](docs/data_tables_reading.md)
+- Baseline 阅读记录：[docs/baseline_reading.md](docs/baseline_reading.md)
+- EDA 解读记录：[docs/eda_interpretation.md](docs/eda_interpretation.md)
+- 误差分析阅读记录：[docs/error_analysis_reading.md](docs/error_analysis_reading.md)
+- 特征实验记录：[docs/feature_experiments.md](docs/feature_experiments.md)
+- 结构化实验日志：[docs/experiment_log.csv](docs/experiment_log.csv)
+- 简历深挖与面试准备文档：[docs/interview_deep_dive.md](docs/interview_deep_dive.md)
+- 项目进阶升级路线图：[docs/advanced_roadmap.md](docs/advanced_roadmap.md)
 
 ## 目录结构
 
@@ -244,9 +254,9 @@ PYTHONPATH=src python3 -m store_sales.family_focus_analysis \
 
 ## 下一步建议
 
-当前版本是工程化基线，适合作为后续迭代起点。你下一步可以继续加：
+当前版本已经不是早期工程基线，而是可继续深化的简历级项目。最推荐的下一步是：
 
-1. 多窗口时间验证
-2. 更强的树模型参数搜索
-3. 家族级别或门店级别的分层建模
-4. 混合模型，例如趋势模型 + 树模型残差修正
+1. 固化验证协议与 submission gate
+2. 继续做 LightGBM 参数收缩和稳定性优化
+3. 做特征消融，明确各特征组贡献
+4. 深化误差 taxonomy，而不是只看总分
