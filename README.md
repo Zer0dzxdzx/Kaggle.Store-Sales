@@ -1,120 +1,111 @@
-# Store Sales Project
+# Kaggle Store Sales Forecasting
 
-这是一个面向 Kaggle `Store Sales - Time Series Forecasting` 比赛的可复现时间序列项目，当前已经从工程 baseline 迭代到带验证、分析、实验日志和提交复盘的数据科学项目。
+这是一个面向 Kaggle `Store Sales - Time Series Forecasting` 比赛的零售需求预测项目。项目目标不是只提交一次结果，而是构建一个可复现、可解释、可迭代的数据科学 workflow：从多表数据理解、特征工程、时间序列验证，到误差诊断、模型对比和 submission 决策。
 
-- 模块化的数据读取、特征工程、验证与预测流程
-- 多窗口与显式时间窗口的递归验证
-- `HistGradientBoostingRegressor` 与 `LightGBM` 两套主模型路径
-- EDA、误差分析、稳定性检查和实验日志闭环
+## 项目快照
 
-## 当前状态
+| 项目维度 | 当前状态 |
+| --- | --- |
+| 预测任务 | 预测 `2017-08-16` 到 `2017-08-31` 的门店-商品家族销量 |
+| 数据粒度 | `date + store_nbr + family` |
+| 评价指标 | RMSLE，越低越好 |
+| 当前 best public score | `0.50834`，来自 `LightGBM baseline` |
+| 原始 HistGBDT baseline public score | `0.58410` |
+| 当前主验证协议 | `August / pre-test explicit windows + recursive forecasting + stability checks` |
+| 当前项目定位 | 核心建模 workflow 已完成，正在做作品集化收尾 |
 
-- 当前 best public submission：`LightGBM baseline = 0.50834`
-- 原 HistGBDT baseline public score：`0.58410`
-- 当前主验证框架：`August / pre-test explicit windows + stability checks`
-- 当前下一步主线：沿已固化的 validation protocol 与 submission gate，继续做 LightGBM 稳定性优化
+## 这个项目展示了什么
 
-## 文档导航
+- 多表数据整合：使用 `train/test`、`stores`、`oil`、`holidays_events` 和 `transactions` 构建预测样本。
+- 防止数据泄漏：区分预测时已知信息和未来未知信息，`transactions` 只做历史聚合，销量 lag 使用严格历史数据。
+- 时间序列验证：不用随机切分，使用多窗口和显式历史窗口，并用递归预测模拟真实 16 天提交场景。
+- 特征工程：构造日历、发薪日、地震事件、油价、节假日、门店静态信息、促销历史、销量 lag 和 rolling features。
+- 模型对比：比较 seasonal naive、ridge、HistGBDT、LightGBM、simple blending 和 LightGBM tuning 候选。
+- 误差诊断：按 family、store、promotion bin、fold 和 test-like slices 拆解模型风险。
+- 实验复盘：记录成功和失败实验，尤其是本地验证变好但 Kaggle public score 变差的案例。
 
-- 比赛题目解读与详细说明：[docs/store_sales_competition_guide.md](docs/store_sales_competition_guide.md)
-- 项目执行过程记录：[docs/project_log.md](docs/project_log.md)
-- 学习进程表：[docs/project_progress_table.md](docs/project_progress_table.md)
-- 数据表阅读记录：[docs/data_tables_reading.md](docs/data_tables_reading.md)
-- Baseline 阅读记录：[docs/baseline_reading.md](docs/baseline_reading.md)
-- EDA 解读记录：[docs/eda_interpretation.md](docs/eda_interpretation.md)
-- 误差分析阅读记录：[docs/error_analysis_reading.md](docs/error_analysis_reading.md)
-- 特征实验记录：[docs/feature_experiments.md](docs/feature_experiments.md)
-- 结构化实验日志：[docs/experiment_log.csv](docs/experiment_log.csv)
-- 简历深挖与面试准备文档：[docs/interview_deep_dive.md](docs/interview_deep_dive.md)
-- 项目进阶升级路线图：[docs/advanced_roadmap.md](docs/advanced_roadmap.md)
-- 验证协议文档：[docs/validation_protocol.md](docs/validation_protocol.md)
-- submission gate 文档：[docs/submission_gate.md](docs/submission_gate.md)
+## 当前结果
 
-## 目录结构
+| 方案 | 验证口径 | 本地 RMSLE | Kaggle public score | 结论 |
+| --- | --- | ---: | ---: | --- |
+| `histgbdt_baseline` | 早期三窗口 validation | `0.401601` | `0.58410` | 首个可提交 baseline |
+| `school_supplies_aug_promo` | 早期三窗口 validation | `0.398186` | `0.59096` | 本地改善但线上变差，不保留 |
+| `histgbdt_baseline` | August / pre-test windows | `0.490514` | `0.58410` | 历史诊断参考 |
+| `lightgbm_baseline` | August / pre-test windows | `0.486767` | `0.50834` | 当前 best submission |
+| `lightgbm_shrinkage_es` | August / pre-test windows | `0.499285` |  | 第一轮 tuning 未超过 baseline |
 
-```text
-.
-├── artifacts/            # 输出目录
-├── data/
-│   └── raw/              # 放置 Kaggle 原始 CSV
-├── src/
-│   └── store_sales/
-│       ├── cli.py
-│       ├── config.py
-│       ├── data.py
-│       ├── features.py
-│       ├── metrics.py
-│       ├── modeling.py
-│       └── pipeline.py
-└── pyproject.toml
-```
+重要说明：
 
-## 数据准备
+- 不同验证口径下的 RMSLE 不能直接横向比较。
+- 当前正式 submission 参考是 `lightgbm_baseline`。
+- `school_supplies_aug_promo` 是一个很有价值的失败案例：它说明本地 mean RMSLE 变好不代表线上泛化一定更好。
+- Kaggle public score 记录见 [docs/experiment_log.csv](docs/experiment_log.csv) 和 [docs/project_log.md](docs/project_log.md)。
 
-将 Kaggle 下载的原始文件放到 `data/raw/` 下，至少包括：
+## 快速开始
 
-- `train.csv`
-- `test.csv`
-- `stores.csv`
-- `oil.csv`
-- `holidays_events.csv`
-
-如果你有这些文件，也会自动利用：
-
-- `transactions.csv`
-- `items.csv`
-
-## 安装
+### 1. 安装环境
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+pip install -e '.[lightgbm]'
+```
+
+如果暂时不运行 LightGBM，也可以只安装基础依赖：
+
+```bash
 pip install -e .
 ```
 
-## 运行
+### 2. 准备数据
 
-```bash
-python3 -m store_sales.cli run \
-  --data-dir data/raw \
-  --output-dir artifacts \
-  --train-start-date 2015-01-01 \
-  --validation-windows 3 \
-  --validation-step-days 16 \
-  --feature-profile baseline \
-  --log-experiment \
-  --experiment-name baseline_histgbdt_multi_window_v1 \
-  --model-type hist_gbdt
+将 Kaggle 下载的原始 CSV 放到 `data/raw/` 下。
+
+必需文件：
+
+```text
+data/raw/
+├── train.csv
+├── test.csv
+├── sample_submission.csv
+├── stores.csv
+├── oil.csv
+└── holidays_events.csv
 ```
 
-输出内容：
+可选文件：
 
-- `artifacts/validation_metrics.json`
-- `artifacts/validation_summary.csv`
-- `artifacts/validation_predictions.csv`
-- `artifacts/validation_predictions_fold_*.csv`
-- `artifacts/submission.csv`
-- `docs/experiment_log.csv`，仅在使用 `--log-experiment` 或 `--experiment-name` 时自动追加
+- `transactions.csv`：如果存在，会用于历史门店交易量聚合特征。
+- `items.csv`：当前主 pipeline 不依赖它。
 
-## 说明
+`data/raw/` 不提交到 Git，避免上传比赛原始数据。
 
-- 默认本地验证窗口为训练集最后 `16` 天，作为回测起点；你可以通过 `--validation-horizon` 自行调整。
-- 可通过 `--validation-windows` 开启多窗口验证，`--validation-step-days` 控制相邻验证窗口之间的步长。
-- 可通过重复传入 `--validation-window YYYY-MM-DD:YYYY-MM-DD` 指定显式验证窗口；这会覆盖默认 rolling windows，适合做历史同季验证。
-- 训练目标做了 `log1p` 变换，预测后再 `expm1` 还原，并裁剪为非负值。
-- 如果环境里装了 `lightgbm`，可以改成 `--model-type lightgbm`。
-- 可通过 `--feature-profile compact|baseline|extended|low_demand|school_supplies_aug_promo` 切换特征工程方案。
-- `low_demand` 会在 baseline 特征基础上增加 family 和 store-family 历史低需求统计特征。
-- `school_supplies_aug_promo` 会在 baseline 特征基础上增加 `SCHOOL AND OFFICE SUPPLIES` 的 8 月、promotion 和 store 交互特征。
-
-### August / pre-test historical validation
-
-用于检查模型是否能泛化到测试期相近的时间位置。前三个窗口是历史年份的 8 月下半月；最后一个窗口是 2017 年测试期前的 pre-test holdout，因为训练集没有 `2017-08-16` 之后的真实 `sales`。
+### 3. 跑一个基础 pipeline
 
 ```bash
 PYTHONPATH=src python3 -m store_sales.cli run \
   --data-dir data/raw \
-  --output-dir artifacts/validation/august_windows/histgbdt_baseline \
+  --output-dir artifacts/baseline_histgbdt \
+  --train-start-date 2015-01-01 \
+  --validation-windows 3 \
+  --validation-step-days 16 \
+  --feature-profile baseline \
+  --model-type hist_gbdt
+```
+
+主要输出：
+
+- `artifacts/baseline_histgbdt/validation_metrics.json`
+- `artifacts/baseline_histgbdt/validation_summary.csv`
+- `artifacts/baseline_histgbdt/validation_predictions_fold_*.csv`
+- `artifacts/baseline_histgbdt/submission.csv`
+
+### 4. 复现当前主验证口径
+
+```bash
+PYTHONPATH=src python3 -m store_sales.cli run \
+  --data-dir data/raw \
+  --output-dir artifacts/validation/august_windows/lightgbm_baseline \
   --train-start-date 2013-01-01 \
   --validation-horizon 16 \
   --validation-window 2014-08-16:2014-08-31 \
@@ -122,48 +113,102 @@ PYTHONPATH=src python3 -m store_sales.cli run \
   --validation-window 2016-08-16:2016-08-31 \
   --validation-window 2017-07-31:2017-08-15 \
   --feature-profile baseline \
-  --model-type hist_gbdt \
+  --model-type lightgbm \
   --skip-submission
 ```
 
-比较多个 run 的报告命令：
+这组窗口是当前正式验证协议的核心：
 
-```bash
-PYTHONPATH=src python3 -m store_sales.validation_window_report \
-  --output-dir reports/validation/august_windows \
-  --baseline-name histgbdt_baseline \
-  --title "August / Pre-Test Validation Windows" \
-  --run histgbdt_baseline=artifacts/validation/august_windows/histgbdt_baseline \
-  --run histgbdt_school_supplies_aug_promo=artifacts/validation/august_windows/histgbdt_school_supplies_aug_promo
+- `2014/2015/2016-08-16~08-31`：历史同季窗口
+- `2017-07-31~08-15`：测试期前最后 16 天 holdout
+
+## 关键文档
+
+### 面向作品集和面试
+
+- [项目总结](docs/resume_project_summary.md)
+- [简历深挖与面试准备](docs/interview_deep_dive.md)
+- [进阶升级路线图](docs/advanced_roadmap.md)
+
+### 面向验证和提交决策
+
+- [验证协议](docs/validation_protocol.md)
+- [Submission gate](docs/submission_gate.md)
+- [LightGBM tuning log](docs/lightgbm_tuning_log.md)
+- [结构化实验日志](docs/experiment_log.csv)
+
+### 面向学习和复盘
+
+- [比赛题目说明](docs/store_sales_competition_guide.md)
+- [数据表阅读记录](docs/data_tables_reading.md)
+- [Baseline 阅读记录](docs/baseline_reading.md)
+- [EDA 解读记录](docs/eda_interpretation.md)
+- [误差分析阅读记录](docs/error_analysis_reading.md)
+- [特征实验记录](docs/feature_experiments.md)
+- [项目日志](docs/project_log.md)
+- [学习进程表](docs/project_progress_table.md)
+
+## 主要报告
+
+| 报告 | 路径 | 用途 |
+| --- | --- | --- |
+| EDA 报告 | `reports/eda/eda_report.md` | 数据概览、趋势、family、促销和门店差异 |
+| 基础误差分析 | `reports/error_analysis/error_analysis_report.md` | family/store/promotion/fold 分组误差 |
+| Fold 3 交叉误差 | `reports/fold3_cross_error/fold3_cross_error_report.md` | 定位 late validation 变差来源 |
+| School supplies 专题分析 | `reports/family_focus/school_office_supplies/family_focus_report.md` | 分析目标 family 的 underprediction |
+| 模型对比 | `reports/model_comparison/comparison_report.md` | 早期模型对比 |
+| August validation | `reports/validation/august_lightgbm/validation_window_report.md` | 当前主验证口径下的 LightGBM 结果 |
+| Feature ablation | `reports/feature_ablation/lightgbm_baseline_fast300/ablation_report.md` | 第一轮特征组消融 |
+| LightGBM tuning | `reports/validation/lightgbm_tuning/comparison_report.md` | 第一轮 LightGBM 参数候选对比 |
+
+## 仓库结构
+
+```text
+.
+├── data/
+│   └── raw/                    # Kaggle 原始数据，gitignored
+├── artifacts/                  # 训练、验证、submission 输出，gitignored
+├── docs/                       # 项目说明、学习记录、验证协议和面试文档
+├── reports/                    # EDA、误差分析、验证、消融和调参报告
+├── src/
+│   └── store_sales/
+│       ├── cli.py              # CLI 入口
+│       ├── config.py           # Pipeline 配置
+│       ├── data.py             # 原始 CSV 读取和基础清洗
+│       ├── features.py         # 特征工程和递归 lag 特征
+│       ├── modeling.py         # 模型训练和预测封装
+│       ├── pipeline.py         # 训练、验证、递归预测和 submission
+│       ├── experiment_runner.py
+│       ├── feature_ablation.py
+│       ├── stability_slice_report.py
+│       └── validation_window_report.py
+└── pyproject.toml
 ```
 
-进一步生成 public-like stability slice 报告：
+## 常用命令
+
+### 生成 EDA
 
 ```bash
-PYTHONPATH=src python3 -m store_sales.stability_slice_report \
+PYTHONPATH=src python3 -m store_sales.eda \
   --data-dir data/raw \
-  --baseline-artifacts-dir artifacts/validation/august_windows/histgbdt_baseline \
-  --experiment-artifacts-dir artifacts/validation/august_windows/histgbdt_school_supplies_aug_promo \
-  --output-dir reports/validation/august_windows/stability_slices \
-  --baseline-name histgbdt_baseline \
-  --experiment-name histgbdt_school_supplies_aug_promo \
-  --target-family "SCHOOL AND OFFICE SUPPLIES" \
-  --min-rows 30
+  --output-dir reports/eda \
+  --validation-summary artifacts/baseline_histgbdt/validation_summary.csv
 ```
 
-## 模型对比（历史三窗口口径）
-
-说明：
-
-- 这一节保留的是项目早期三窗口对比结果，主要用于回顾 baseline 演进过程
-- 它不是当前正式 submission protocol
-- 这里的 `0.401601` 一类数值，不能和当前 `August / pre-test explicit windows` 协议下的 `0.486767` 直接横比
-- 当前正式 protocol 见 [docs/validation_protocol.md](docs/validation_protocol.md)
-
-运行多模型验证对比：
+### 生成基础误差分析
 
 ```bash
-python3 -m store_sales.cli compare \
+PYTHONPATH=src python3 -m store_sales.error_analysis \
+  --data-dir data/raw \
+  --artifacts-dir artifacts/baseline_histgbdt \
+  --output-dir reports/error_analysis
+```
+
+### 比较多个模型
+
+```bash
+PYTHONPATH=src python3 -m store_sales.cli compare \
   --data-dir data/raw \
   --output-dir artifacts/experiments \
   --report-dir reports/model_comparison \
@@ -172,100 +217,49 @@ python3 -m store_sales.cli compare \
   --validation-step-days 16
 ```
 
-输出内容：
-
-- `reports/model_comparison/comparison_results.csv`
-- `reports/model_comparison/comparison_report.md`
-- `artifacts/experiments/<experiment_name>/validation_summary.csv`
-
-当前已记录的历史三模型对比结果：
-
-- `histgbdt_baseline`：三窗口 mean RMSLE `0.401601`
-- `seasonal_naive`：三窗口 mean RMSLE `0.458129`
-- `ridge_baseline`：三窗口 mean RMSLE `2.734132`
-
-说明：如果 `--validation-step-days` 小于 `--validation-horizon`，验证窗口会重叠；当前默认 `16/16` 不重叠。`ridge_baseline` 使用当前序数编码特征，主要作为负向对照。
-
-## EDA
-
-生成可视化分析报告：
+### 运行特征消融
 
 ```bash
-PYTHONPATH=src python3 -m store_sales.eda \
+PYTHONPATH=src python3 -m store_sales.cli ablate \
   --data-dir data/raw \
-  --output-dir reports/eda \
-  --validation-summary artifacts/validation_summary.csv
+  --output-dir artifacts/feature_ablation/lightgbm_baseline_fast300 \
+  --report-dir reports/feature_ablation/lightgbm_baseline_fast300 \
+  --model-type lightgbm \
+  --feature-profile baseline \
+  --model-param n_estimators=300
 ```
 
-输出内容：
+## 重要建模原则
 
-- `reports/eda/eda_report.md`
-- `reports/eda/figures/*.png`
-- `reports/eda/tables/*.csv`
+### 为什么不能随机切分
 
-## 误差分析
+这是预测未来销量的时间序列问题。随机切分可能让训练集包含比验证集更晚的日期，相当于用未来信息预测过去，会让本地验证分数失真。
 
-生成 family、store、promotion bin 和 fold 误差分析：
+### 如何避免数据泄漏
 
-```bash
-PYTHONPATH=src python3 -m store_sales.error_analysis \
-  --data-dir data/raw \
-  --artifacts-dir artifacts \
-  --output-dir reports/error_analysis
-```
+- `sales_lag_*` 使用历史日期的销量。
+- rolling sales 特征使用 `shift(1)`，不包含当天真实销量。
+- 验证和测试使用递归预测，预测第 2 天时只能使用第 1 天的预测值。
+- `transactions.csv` 不直接按未来日期 merge，只使用训练窗口内的历史聚合。
+- `onpromotion` 可以使用，因为 `test.csv` 已经公开给出未来促销信息。
 
-输出内容：
+### 为什么要看 stability slices
 
-- `reports/error_analysis/error_analysis_report.md`
-- `reports/error_analysis/tables/family_error.csv`
-- `reports/error_analysis/tables/store_error.csv`
-- `reports/error_analysis/tables/promotion_bin_error.csv`
-- `reports/error_analysis/tables/fold_comparison.csv`
+项目中出现过本地验证变好但 Kaggle public score 变差的实验。原因是一个候选方案可能改善目标切片，但伤害非目标 family 或测试期权重更高的 promotion 切片。因此当前 submission 决策不只看 mean RMSLE，还看 worst fold、non-target regression 和 test-like distribution risk。
 
-说明：family、store、promotion bin 表是跨 validation folds 的汇总；fold comparison 只做验证窗口级别对比。
+## 当前局限
 
-生成 fold 3 交叉误差分析：
+- 还没有完整 `tests/` 和 CI，下一阶段会补轻量 sanity checks。
+- 当前 validation gate 是基于有限历史案例校准出来的第一版规则，不应被理解成 leaderboard 的绝对预测器。
+- LightGBM baseline 是当前 best public submission，但仍存在 fold 1/2 回退和部分非目标 family regression 风险。
+- 项目还没有做更高级的模型集成或 private leaderboard 级别优化。
 
-```bash
-PYTHONPATH=src python3 -m store_sales.fold3_cross_error \
-  --data-dir data/raw \
-  --artifacts-dir artifacts \
-  --output-dir reports/fold3_cross_error \
-  --target-fold 3 \
-  --min-fold-rows 4
-```
+## 下一阶段
 
-输出内容：
+当前优先级不是马上继续改模型，而是把项目作品集化：
 
-- `reports/fold3_cross_error/fold3_cross_error_report.md`
-- `reports/fold3_cross_error/tables/fold3_*_worsening.csv`
-- `reports/fold3_cross_error/tables/fold3_new_*_segments.csv`
-
-单独分析 `SCHOOL AND OFFICE SUPPLIES`：
-
-```bash
-PYTHONPATH=src python3 -m store_sales.family_focus_analysis \
-  --data-dir data/raw \
-  --artifacts-dir artifacts \
-  --output-dir reports/family_focus/school_office_supplies \
-  --family "SCHOOL AND OFFICE SUPPLIES" \
-  --target-fold 3 \
-  --min-fold-rows 4
-```
-
-输出内容：
-
-- `reports/family_focus/school_office_supplies/family_focus_report.md`
-- `reports/family_focus/school_office_supplies/tables/*.csv`
-- `reports/family_focus/school_office_supplies/figures/*.png`
-
-说明：该分析只用于定位 `SCHOOL AND OFFICE SUPPLIES` 在 fold 3 的错误来源，不改变模型和提交文件。
-
-## 下一步建议
-
-当前版本已经不是早期工程基线，而是可继续深化的简历级项目。最推荐的下一步是：
-
-1. 固化验证协议与 submission gate
-2. 继续做 LightGBM 参数收缩和稳定性优化
-3. 做特征消融，明确各特征组贡献
-4. 深化误差 taxonomy，而不是只看总分
+1. 补一份唯一可信的最终结果总结。
+2. 补可复现性文档。
+3. 增加轻量测试和 sanity checks。
+4. 写一份完整 case study。
+5. 整理面试讲述稿。
