@@ -14,10 +14,13 @@ class PipelineConfig:
     validation_step_days: int | None = None
     validation_window_dates: tuple[tuple[str, str], ...] = ()
     model_type: str = "hist_gbdt"
+    lightgbm_preset: str = "baseline"
     feature_profile: str = "baseline"
     demand_features: bool = False
     school_supplies_features: bool = False
     random_state: int = 42
+    early_stopping_rounds: int | None = None
+    early_stopping_validation_days: int = 0
     sales_lags: tuple[int, ...] = (1, 7, 14, 28)
     sales_windows: tuple[int, ...] = (7, 14, 28, 56)
     promo_lags: tuple[int, ...] = (1, 7, 14)

@@ -277,7 +277,34 @@ def fit_training_pipeline(
             "No training rows remain after feature generation. "
             "Use an earlier `--train-start-date` or reduce the lag settings."
         )
-    return fit_model(train_features, config)
+    fit_frame, eval_frame = split_early_stopping_frame(train_features, config)
+    return fit_model(fit_frame, config, eval_frame=eval_frame)
+
+
+def split_early_stopping_frame(
+    train_features: pd.DataFrame,
+    config: PipelineConfig,
+) -> tuple[pd.DataFrame, pd.DataFrame | None]:
+    if config.model_type != "lightgbm":
+        return train_features, None
+    if config.early_stopping_rounds is None:
+        return train_features, None
+    if config.early_stopping_validation_days < 1:
+        raise ValueError("early_stopping_validation_days must be at least 1 when early stopping is enabled.")
+
+    unique_dates = sorted(pd.Timestamp(date_value) for date_value in train_features["date"].unique())
+    if len(unique_dates) <= config.early_stopping_validation_days:
+        raise ValueError(
+            "Training feature dates are too short for early stopping. "
+            "Reduce `early_stopping_validation_days` or disable early stopping."
+        )
+
+    validation_start = unique_dates[-config.early_stopping_validation_days]
+    fit_frame = train_features[train_features["date"] < validation_start].copy()
+    eval_frame = train_features[train_features["date"] >= validation_start].copy()
+    if fit_frame.empty or eval_frame.empty:
+        raise ValueError("Early stopping split produced an empty train or evaluation frame.")
+    return fit_frame.reset_index(drop=True), eval_frame.reset_index(drop=True)
 
 
 def run_pipeline(config: PipelineConfig) -> PipelineOutputs:
@@ -326,6 +353,7 @@ def run_pipeline(config: PipelineConfig) -> PipelineOutputs:
                 "train_rows": int(len(train_part)),
                 "validation_rows": int(len(validation_part)),
                 "predictions_path": str(fold_predictions_path),
+                "model_best_iteration": validation_model.training_metadata.get("best_iteration", ""),
             }
         )
 
@@ -351,6 +379,10 @@ def run_pipeline(config: PipelineConfig) -> PipelineOutputs:
                 for start, end in config.validation_window_dates
             ],
             "model_type": config.model_type,
+            "lightgbm_preset": config.lightgbm_preset,
+            "model_params": config.model_params,
+            "early_stopping_rounds": config.early_stopping_rounds,
+            "early_stopping_validation_days": config.early_stopping_validation_days,
             "feature_profile": config.feature_profile,
             "train_rows": int(latest_fold["train_rows"]),
             "validation_rows": int(latest_fold["validation_rows"]),

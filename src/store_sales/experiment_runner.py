@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import pandas as pd
@@ -18,6 +18,10 @@ class ExperimentSpec:
     feature_profile: str
     train_start_date: str
     description: str
+    lightgbm_preset: str = "baseline"
+    model_params: dict[str, object] = field(default_factory=dict)
+    early_stopping_rounds: int | None = None
+    early_stopping_validation_days: int = 0
 
 
 EXPERIMENT_SPECS: dict[str, ExperimentSpec] = {
@@ -63,6 +67,43 @@ EXPERIMENT_SPECS: dict[str, ExperimentSpec] = {
         train_start_date="2015-01-01",
         description="Tree model with targeted August, promotion, and store interactions for SCHOOL AND OFFICE SUPPLIES.",
     ),
+    "lightgbm_baseline": ExperimentSpec(
+        name="lightgbm_baseline",
+        model_type="lightgbm",
+        feature_profile="baseline",
+        train_start_date="2013-01-01",
+        description="Original LightGBM baseline on the fixed baseline feature profile.",
+    ),
+    "lightgbm_shrinkage_es": ExperimentSpec(
+        name="lightgbm_shrinkage_es",
+        model_type="lightgbm",
+        feature_profile="baseline",
+        train_start_date="2013-01-01",
+        description="LightGBM shrinkage preset with a lower learning rate and early stopping holdout.",
+        lightgbm_preset="shrinkage",
+        early_stopping_rounds=100,
+        early_stopping_validation_days=16,
+    ),
+    "lightgbm_regularized_es": ExperimentSpec(
+        name="lightgbm_regularized_es",
+        model_type="lightgbm",
+        feature_profile="baseline",
+        train_start_date="2013-01-01",
+        description="LightGBM regularized preset with smaller leaves, subsampling, L1/L2, and early stopping.",
+        lightgbm_preset="regularized",
+        early_stopping_rounds=100,
+        early_stopping_validation_days=16,
+    ),
+    "lightgbm_conservative_es": ExperimentSpec(
+        name="lightgbm_conservative_es",
+        model_type="lightgbm",
+        feature_profile="baseline",
+        train_start_date="2013-01-01",
+        description="LightGBM conservative preset with strong leaf-size and regularization constraints.",
+        lightgbm_preset="conservative",
+        early_stopping_rounds=100,
+        early_stopping_validation_days=16,
+    ),
 }
 
 
@@ -97,6 +138,10 @@ def build_experiment_config(
         validation_step_days=validation_step_days,
         validation_window_dates=validation_window_dates,
         model_type=spec.model_type,
+        lightgbm_preset=spec.lightgbm_preset,
+        model_params=spec.model_params.copy(),
+        early_stopping_rounds=spec.early_stopping_rounds,
+        early_stopping_validation_days=spec.early_stopping_validation_days,
         feature_profile=spec.feature_profile,
         random_state=random_state,
         make_submission=make_submission,
@@ -115,6 +160,10 @@ def build_comparison_row(
     return {
         "experiment_name": spec.name,
         "model_type": spec.model_type,
+        "lightgbm_preset": config.lightgbm_preset,
+        "early_stopping_rounds": "" if config.early_stopping_rounds is None else config.early_stopping_rounds,
+        "early_stopping_validation_days": config.early_stopping_validation_days,
+        "model_params": "|".join(f"{key}={value}" for key, value in sorted(config.model_params.items())),
         "feature_profile": config.feature_profile,
         "train_start_date": config.train_start_date,
         "validation_horizon": config.validation_horizon,
@@ -163,6 +212,9 @@ def write_comparison_report(results: pd.DataFrame, report_dir: Path) -> tuple[Pa
         "validation_rmsle_std",
         "validation_rmsle_min",
         "validation_rmsle_max",
+        "lightgbm_preset",
+        "early_stopping_rounds",
+        "early_stopping_validation_days",
         "validation_window_dates",
     ]
     lines = [

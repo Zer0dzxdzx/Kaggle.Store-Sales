@@ -3,11 +3,14 @@ from __future__ import annotations
 import argparse
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 from store_sales.config import PipelineConfig
 from store_sales.experiment_log import append_experiment_log, build_experiment_log_row
 from store_sales.experiment_runner import available_experiments, run_experiment_suite
+from store_sales.feature_ablation import run_feature_ablation
 from store_sales.feature_profiles import apply_feature_profile, available_feature_profiles
+from store_sales.lightgbm_params import available_lightgbm_presets
 from store_sales.pipeline import run_pipeline
 
 
@@ -37,6 +40,46 @@ def parse_validation_window_dates(values: list[str] | None) -> tuple[tuple[str, 
     return tuple(windows)
 
 
+def parse_model_param_value(raw_value: str) -> Any:
+    lowered = raw_value.lower()
+    if lowered == "none":
+        return None
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+
+    try:
+        return int(raw_value)
+    except ValueError:
+        pass
+
+    try:
+        return float(raw_value)
+    except ValueError:
+        return raw_value
+
+
+def parse_model_params(values: list[str] | None) -> dict[str, object]:
+    if not values:
+        return {}
+
+    params: dict[str, object] = {}
+    for value in values:
+        if "=" not in value:
+            raise argparse.ArgumentTypeError(
+                f"Invalid model parameter `{value}`. Expected KEY=VALUE."
+            )
+        key, raw_value = value.split("=", maxsplit=1)
+        key = key.strip()
+        if not key:
+            raise argparse.ArgumentTypeError(
+                f"Invalid model parameter `{value}`. Parameter name cannot be empty."
+            )
+        params[key] = parse_model_param_value(raw_value.strip())
+    return params
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the Kaggle Store Sales baseline pipeline.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -58,6 +101,15 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     run_parser.add_argument("--model-type", choices=["seasonal_naive", "ridge", "hist_gbdt", "lightgbm"], default="hist_gbdt")
+    run_parser.add_argument("--lightgbm-preset", choices=available_lightgbm_presets(), default="baseline")
+    run_parser.add_argument(
+        "--model-param",
+        action="append",
+        default=None,
+        help="Model parameter override in KEY=VALUE format. Can be repeated.",
+    )
+    run_parser.add_argument("--early-stopping-rounds", type=int, default=None)
+    run_parser.add_argument("--early-stopping-validation-days", type=int, default=0)
     run_parser.add_argument("--feature-profile", choices=available_feature_profiles(), default="baseline")
     run_parser.add_argument("--random-state", type=int, default=42)
     run_parser.add_argument("--skip-submission", action="store_true")
@@ -104,6 +156,7 @@ def main() -> None:
     if args.command == "run":
         try:
             validation_window_dates = parse_validation_window_dates(args.validation_window)
+            model_params = parse_model_params(args.model_param)
         except argparse.ArgumentTypeError as exc:
             parser.error(str(exc))
         config = PipelineConfig(
@@ -115,6 +168,10 @@ def main() -> None:
             validation_step_days=args.validation_step_days,
             validation_window_dates=validation_window_dates,
             model_type=args.model_type,
+            lightgbm_preset=args.lightgbm_preset,
+            model_params=model_params,
+            early_stopping_rounds=args.early_stopping_rounds,
+            early_stopping_validation_days=args.early_stopping_validation_days,
             feature_profile=args.feature_profile,
             random_state=args.random_state,
             make_submission=not args.skip_submission,

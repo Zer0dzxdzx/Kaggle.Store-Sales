@@ -125,6 +125,19 @@ def build_validation_scheme(config: PipelineConfig) -> str:
     )
 
 
+def build_model_summary(config: PipelineConfig) -> str:
+    parts = [config.model_type]
+    if config.model_type == "lightgbm":
+        parts.append(f"preset={config.lightgbm_preset}")
+    if config.early_stopping_rounds is not None:
+        parts.append(f"early_stopping_rounds={config.early_stopping_rounds}")
+        parts.append(f"early_stopping_validation_days={config.early_stopping_validation_days}")
+    if config.model_params:
+        params = "|".join(f"{key}={value}" for key, value in sorted(config.model_params.items()))
+        parts.append(f"params={params}")
+    return "; ".join(parts)
+
+
 def build_experiment_log_row(
     config: PipelineConfig,
     outputs: PipelineOutputs,
@@ -160,7 +173,7 @@ def build_experiment_log_row(
             "sales log1p target; oil daily interpolation; holiday locale aggregation; "
             "historical transaction aggregation; ordinal categorical encoding"
         ),
-        "model": config.model_type,
+        "model": build_model_summary(config),
         "validation_scheme": build_validation_scheme(config),
         "validation_rmsle": mean_score,
         "kaggle_public_score": "",
