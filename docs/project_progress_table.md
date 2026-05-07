@@ -21,6 +21,8 @@
 | 5. 特征实验 | 2026-04-20 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile、跑验证、记录实验日志 | `docs/feature_experiments.md` 和 `docs/experiment_log.csv` | 实验 2 已提交验证，不替换 baseline；August validation 已补充 |
 | 6. 项目总结 | 2026-04-21 | 把项目转成简历和面试可讲述内容 | 决定哪些结论真实、哪些不能夸大 | 整理 README、简历摘要和面试深挖文档 | `docs/resume_project_summary.md` 和 `docs/interview_deep_dive.md` | 初版完成 |
 | 7. 验证协议与 Gate | 2026-05-07 | 固化正式验证口径与 submission 决策门槛 | 判断哪些指标是主判断，哪些只是风险提示，什么情况下值得提交 | 汇总历史成败案例、整理 validation protocol 与 submission gate 文档 | `docs/validation_protocol.md` 和 `docs/submission_gate.md` | 初版完成 |
+| 8. LightGBM 系统化调参 | 2026-05-07 | 在统一验证协议下比较 LightGBM 参数候选 | 判断是否替换当前 `lightgbm_baseline`，以及 broad tuning 是否继续 | 跑 baseline/shrinkage/regularized/conservative 对比并整理报告 | `docs/lightgbm_tuning_log.md` 和 `reports/validation/lightgbm_tuning/` | 第一轮完成，baseline 继续保留 |
+| 9. 特征消融 | 2026-05-07 | 用移除实验判断哪些特征组真正贡献稳定收益 | 判断哪些特征应保留、哪些只是候选删除或重设计 | 实现 ablation 工具、输出各组移除后的多窗口结果 | `src/store_sales/feature_ablation.py` 和 `reports/feature_ablation/lightgbm_baseline_fast300/` | 第一轮完成，作为方向证据 |
 
 ## 阶段 0：读题记录
 
@@ -223,3 +225,31 @@
   - `baseline + extended blend` 应被 `Block`
   - `lightgbm_baseline` 属于 `Review`，它是带 warning 的强候选，而不是无风险候选
 - 下一步不应直接盲目调参，而是先按这套 protocol/gate 跑后续 LightGBM 候选。
+
+阶段 8 LightGBM 系统化调参第一轮已完成：
+
+- 固定 `baseline` feature profile，不同时改特征和模型，保证实验只回答“参数是否更稳”。
+- 固定使用 August / pre-test explicit windows：
+  - `2014-08-16:2014-08-31`
+  - `2015-08-16:2015-08-31`
+  - `2016-08-16:2016-08-31`
+  - `2017-07-31:2017-08-15`
+- 对比候选包括 `lightgbm_baseline`、`lightgbm_shrinkage_es`、`lightgbm_regularized_es`、`lightgbm_conservative_es`。
+- `lightgbm_baseline` mean RMSLE 为 `0.486767`，worst fold 为 `0.583115`，仍是本轮最优。
+- `lightgbm_shrinkage_es` mean RMSLE 为 `0.499285`，worst fold 恶化到 `0.710339`。
+- `lightgbm_conservative_es` mean RMSLE 为 `0.507772`，worst fold 为 `0.711345`。
+- `lightgbm_regularized_es` mean RMSLE 为 `0.519939`，worst fold 为 `0.717537`。
+- 决策：不替换 `lightgbm_baseline`；第一轮 broad tuning 没有带来稳定提升，后续应转向 worst fold、non-target family 和 test-like slice 的稳定性优化。
+
+阶段 9 特征消融第一轮已完成：
+
+- 新增/使用 `feature_ablation` 流程，按特征组做移除实验。
+- 本轮使用 `lightgbm_baseline_fast300` 配置，baseline mean RMSLE 为 `0.498996`，worst fold 为 `0.594955`。
+- 由于该配置使用 `n_estimators=300` 的快速版本，它适合作为方向性证据，不应直接等同于最终 submission 配置。
+- 移除后最明显变差的特征组是 `sales_rolling`，mean delta 为 `+0.061111`，说明滚动销量统计是当前最重要的特征组。
+- `promotion` mean delta 为 `+0.042030`，说明促销特征需要继续保留并可能继续增强。
+- `earthquake`、`store_metadata`、`holidays`、`identity`、`transactions` 移除后也不同程度变差，暂不直接删除。
+- `calendar` 是 mixed 信号：mean 变差但 worst fold 变好，不能直接作为保留或删除判决。
+- `oil` 移除后 mean delta 为 `-0.000803`，是小幅 removal candidate，但收益很小，需要复验。
+- `sales_lags` 移除后 mean RMSLE 变好，但 worst fold 变差 `+0.016073`，属于混合信号，不能简单删除。
+- 决策：短期保留 `sales_rolling` 和 `promotion`，把 `oil` 与 `sales_lags` 作为后续复验/重设计对象。

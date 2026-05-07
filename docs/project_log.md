@@ -86,6 +86,68 @@
 2. 每个新候选都按 `validation_protocol.md + submission_gate.md` 输出统一判断。
 3. 如果多轮新实验都让 gate 和 public score 的关系更清晰，再考虑收紧或放宽阈值。
 
+#### 阶段 8（进阶）：LightGBM 系统化调参第一轮
+
+- 目标：在固定验证协议和固定 `baseline` 特征的前提下，比较 LightGBM 参数候选，判断是否存在比 `lightgbm_baseline` 更稳的模型设置。
+- 对比候选：
+  - `lightgbm_baseline`
+  - `lightgbm_shrinkage_es`
+  - `lightgbm_regularized_es`
+  - `lightgbm_conservative_es`
+- 验证口径：继续使用 August / pre-test explicit windows，避免和前面实验混用不同分数口径。
+
+结果：
+
+- `lightgbm_baseline`：mean RMSLE `0.486767`，worst fold `0.583115`。
+- `lightgbm_shrinkage_es`：mean RMSLE `0.499285`，worst fold `0.710339`。
+- `lightgbm_conservative_es`：mean RMSLE `0.507772`，worst fold `0.711345`。
+- `lightgbm_regularized_es`：mean RMSLE `0.519939`，worst fold `0.717537`。
+
+结论：
+
+- 本轮系统化调参没有替换当前主模型，`lightgbm_baseline` 仍是当前 LightGBM reference。
+- `shrinkage_es` 的整体表现变差，worst fold 也明显恶化；更细的 fold 级对比见 `reports/validation/lightgbm_tuning/window_report/validation_window_report.md`。
+- 后续不应继续盲目扩大参数网格，而应围绕 worst fold、non-target family 和 test-like slices 做更窄的稳定性优化。
+- 本轮没有生成新的 Kaggle submission。
+
+相关报告：
+
+- `docs/lightgbm_tuning_log.md`
+- `reports/validation/lightgbm_tuning/comparison_report.md`
+- `reports/validation/lightgbm_tuning/shrinkage_vs_baseline_slices/stability_slice_report.md`
+
+#### 阶段 9（进阶）：feature ablation 第一轮
+
+- 目标：从“特征越来越多”切换到“知道哪些特征真的有贡献”，用移除实验判断主要特征组的价值。
+- 新增/使用 `src/store_sales/feature_ablation.py` 和 CLI `ablate` 流程，自动输出每个特征组移除后的多窗口验证结果。
+- 本轮配置为 `lightgbm_baseline_fast300`：
+  - `model_type=lightgbm`
+  - `feature_profile=baseline`
+  - `n_estimators=300`
+  - August / pre-test explicit windows
+
+结果：
+
+- baseline mean RMSLE：`0.498996`，worst fold：`0.594955`。
+- 移除 `sales_rolling` 后 mean delta `+0.061111`，说明滚动销量统计是最强特征组。
+- 移除 `promotion` 后 mean delta `+0.042030`，说明促销特征是第二重要的稳定贡献来源。
+- 移除 `earthquake` 后 mean delta `+0.020182`，但 worst fold 恶化明显，需要谨慎解释。
+- `calendar` 是典型 mixed 信号：mean 变差但 worst fold 变好，不能直接作为 keep/drop 判决。
+- 移除 `oil` 后 mean delta `-0.000803`，是小幅 removal candidate。
+- 移除 `sales_lags` 后 mean RMSLE 变好，但 worst fold 恶化 `+0.016073`，属于混合信号，不应直接删除。
+
+结论：
+
+- 第一轮消融支持继续保留并深挖 `sales_rolling` 和 `promotion`。
+- `oil` 可以作为后续精简/复验候选，但当前收益太小，不能只凭一次 fast300 ablation 就删除。
+- `sales_lags` 更适合重设计或分组处理，而不是简单移除。
+- 本轮是方向性证据，不是最终特征保留/删除判决；真正改默认特征前仍需要通过 `validation_protocol + submission_gate`。
+
+相关报告：
+
+- `reports/feature_ablation/lightgbm_baseline_fast300/ablation_report.md`
+- `reports/feature_ablation/lightgbm_baseline_fast300/ablation_results.csv`
+
 ## 时间线
 
 ### 2026-04-15

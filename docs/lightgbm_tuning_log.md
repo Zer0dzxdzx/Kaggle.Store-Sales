@@ -20,16 +20,16 @@
 
 | experiment | preset | mean RMSLE | std | worst fold | 结论 |
 | --- | --- | ---: | ---: | ---: | --- |
-| `lightgbm_baseline` | baseline | 0.486767 | 0.070236 | 0.400730 | 当前最优，保留 |
-| `lightgbm_shrinkage_es` | shrinkage | 0.499285 | 0.124943 | 0.403487 | fold 1/2 改善，但 fold 3 大幅恶化 |
-| `lightgbm_conservative_es` | conservative | 0.507772 | 0.120996 | 0.414622 | 整体不如 baseline |
-| `lightgbm_regularized_es` | regularized | 0.519939 | 0.126331 | 0.406631 | 整体最差 |
+| `lightgbm_baseline` | baseline | 0.486767 | 0.070236 | 0.583115 | 当前最优，保留 |
+| `lightgbm_shrinkage_es` | shrinkage | 0.499285 | 0.124943 | 0.710339 | 整体和 worst fold 均不如 baseline |
+| `lightgbm_conservative_es` | conservative | 0.507772 | 0.120996 | 0.711345 | 整体不如 baseline |
+| `lightgbm_regularized_es` | regularized | 0.519939 | 0.126331 | 0.717537 | 整体最差 |
 
 ## 关键观察
 
-- `shrinkage_es` 不是稳定改进：fold 1/2 下降，但 fold 3 从 `0.583115` 恶化到 `0.710339`。
-- stability slice 显示 `shrinkage_es` 让 `SCHOOL AND OFFICE SUPPLIES`、多个非目标 family 和若干 test-overweighted slice 一起变差。
-- `regularized_es` 和 `conservative_es` 也没有压住 2016 fold 风险。
+- `shrinkage_es` 不是稳定改进：mean 变差，worst fold 也明显恶化；更细的 fold 级对比见 `reports/validation/lightgbm_tuning/window_report/validation_window_report.md`。
+- 更完整的 stability slice 诊断见 `reports/validation/lightgbm_tuning/shrinkage_vs_baseline_slices/stability_slice_report.md`，其中 `shrinkage_es` 让 `SCHOOL AND OFFICE SUPPLIES`、多个非目标 family 和若干 test-overweighted slice 一起变差。
+- `regularized_es` 和 `conservative_es` 也没有压住 worst fold 风险。
 - 因此这轮的结论不是替换 baseline，而是把 LightGBM 的系统化调参边界跑清楚。
 
 ## 结论
