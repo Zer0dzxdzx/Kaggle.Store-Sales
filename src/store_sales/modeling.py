@@ -211,6 +211,8 @@ def fit_model(
             )
         model.fit(X_train, y_train, **fit_kwargs)
         best_iteration = getattr(model, "best_iteration_", None)
+        if not config.early_stopping_rounds:
+            best_iteration = None
         return _build_bundle(
             model,
             encoder,

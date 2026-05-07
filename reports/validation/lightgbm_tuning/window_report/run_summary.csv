@@ -1,0 +1,5 @@
+run_name,validation_rmsle_mean,validation_rmsle_std,validation_rmsle_min,validation_rmsle_max,worst_fold_id,train_rows_min,train_rows_max,artifacts_dir
+lightgbm_baseline,0.48676658922987864,0.07023601241301516,0.40072979062637,0.5831153472818011,3,1053162,2972376,artifacts/validation/lightgbm_tuning/lightgbm_baseline
+lightgbm_shrinkage_es,0.4992845547763518,0.12494267965870702,0.4034868385753627,0.7103390349216584,3,1053162,2972376,artifacts/validation/lightgbm_tuning/lightgbm_shrinkage_es
+lightgbm_conservative_es,0.507772311427892,0.1209960960022811,0.4146215030562117,0.7113453461901752,3,1053162,2972376,artifacts/validation/lightgbm_tuning/lightgbm_conservative_es
+lightgbm_regularized_es,0.5199390546321492,0.12633089515229326,0.406630649091823,0.717537147275435,3,1053162,2972376,artifacts/validation/lightgbm_tuning/lightgbm_regularized_es
