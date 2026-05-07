@@ -145,6 +145,54 @@ def build_parser() -> argparse.ArgumentParser:
     compare_parser.add_argument("--include-submission", action="store_true")
     compare_parser.add_argument("--log-experiments", action="store_true")
     compare_parser.add_argument("--experiment-log-path", type=Path, default=Path("docs/experiment_log.csv"))
+
+    ablate_parser = subparsers.add_parser(
+        "ablate",
+        help="Run feature-group ablation experiments and write a ranked report.",
+    )
+    ablate_parser.add_argument("--data-dir", type=Path, default=Path("data/raw"))
+    ablate_parser.add_argument("--output-dir", type=Path, default=Path("artifacts/feature_ablation"))
+    ablate_parser.add_argument("--report-dir", type=Path, default=Path("reports/feature_ablation"))
+    ablate_parser.add_argument("--train-start-date", default="2013-01-01")
+    ablate_parser.add_argument("--validation-horizon", type=int, default=16)
+    ablate_parser.add_argument("--validation-windows", type=int, default=4)
+    ablate_parser.add_argument("--validation-step-days", type=int, default=None)
+    ablate_parser.add_argument(
+        "--validation-window",
+        action="append",
+        default=None,
+        help=(
+            "Explicit inclusive validation window in YYYY-MM-DD:YYYY-MM-DD format. "
+            "Can be repeated; overrides rolling validation window generation."
+        ),
+    )
+    ablate_parser.add_argument("--model-type", choices=["seasonal_naive", "ridge", "hist_gbdt", "lightgbm"], default="lightgbm")
+    ablate_parser.add_argument("--lightgbm-preset", choices=available_lightgbm_presets(), default="baseline")
+    ablate_parser.add_argument(
+        "--model-param",
+        action="append",
+        default=None,
+        help="Model parameter override in KEY=VALUE format. Can be repeated.",
+    )
+    ablate_parser.add_argument("--early-stopping-rounds", type=int, default=None)
+    ablate_parser.add_argument("--early-stopping-validation-days", type=int, default=0)
+    ablate_parser.add_argument("--feature-profile", choices=available_feature_profiles(), default="baseline")
+    ablate_parser.add_argument("--random-state", type=int, default=42)
+    ablate_parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Replace existing ablation outputs in the selected output/report directories.",
+    )
+    ablate_parser.add_argument(
+        "--ablation-groups",
+        nargs="+",
+        default=None,
+        help=(
+            "Feature groups to remove one at a time. Defaults to all groups available for the selected profile. "
+            "Common groups: identity, store_metadata, calendar, earthquake, sales_lags, sales_rolling, "
+            "promotion, oil, holidays, transactions, demand_history, school_supplies_targeted."
+        ),
+    )
     return parser
 
 
@@ -223,6 +271,54 @@ def main() -> None:
         print(f"Best experiment: {results.sort_values('validation_rmsle_mean').iloc[0]['experiment_name']}")
         print(f"Results: {args.report_dir / 'comparison_results.csv'}")
         print(f"Report: {args.report_dir / 'comparison_report.md'}")
+        return
+
+    if args.command == "ablate":
+        try:
+            validation_window_dates = parse_validation_window_dates(args.validation_window)
+            model_params = parse_model_params(args.model_param)
+            from store_sales.feature_ablation import run_feature_ablation
+        except argparse.ArgumentTypeError as exc:
+            parser.error(str(exc))
+        except ImportError:
+            parser.error(
+                "Feature ablation support is not available in this checkout. "
+                "Restore `src/store_sales/feature_ablation.py` or remove the `ablate` command."
+            )
+        try:
+            results = run_feature_ablation(
+                data_dir=args.data_dir,
+                output_dir=args.output_dir,
+                report_dir=args.report_dir,
+                model_type=args.model_type,
+                lightgbm_preset=args.lightgbm_preset,
+                model_params=model_params,
+                early_stopping_rounds=args.early_stopping_rounds,
+                early_stopping_validation_days=args.early_stopping_validation_days,
+                feature_profile=args.feature_profile,
+                train_start_date=args.train_start_date,
+                validation_horizon=args.validation_horizon,
+                validation_windows=len(validation_window_dates) or args.validation_windows,
+                validation_step_days=args.validation_step_days,
+                validation_window_dates=validation_window_dates,
+                random_state=args.random_state,
+                group_names=tuple(args.ablation_groups or ()),
+                overwrite=args.overwrite,
+            )
+        except FileExistsError as exc:
+            parser.error(str(exc))
+        best_available = results.sort_values("validation_rmsle_mean").iloc[0]
+        ablated_results = results[results["ablation_group"] != "baseline"]
+        print("Feature ablation complete.")
+        print(f"Best validation run: {best_available['run_name']} ({best_available['validation_rmsle_mean']:.6f})")
+        if not ablated_results.empty:
+            most_useful = ablated_results.sort_values("mean_delta_vs_baseline", ascending=False).iloc[0]
+            print(
+                "Original feature group whose removal hurt mean most: "
+                f"{most_useful['ablation_group']} (delta {most_useful['mean_delta_vs_baseline']:.6f})"
+            )
+        print(f"Results: {args.report_dir / 'ablation_results.csv'}")
+        print(f"Report: {args.report_dir / 'ablation_report.md'}")
         return
 
     raise ValueError(f"Unsupported command: {args.command}")
