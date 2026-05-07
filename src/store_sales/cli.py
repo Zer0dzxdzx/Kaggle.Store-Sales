@@ -8,7 +8,6 @@ from typing import Any
 from store_sales.config import PipelineConfig
 from store_sales.experiment_log import append_experiment_log, build_experiment_log_row
 from store_sales.experiment_runner import available_experiments, run_experiment_suite
-from store_sales.feature_ablation import run_feature_ablation
 from store_sales.feature_profiles import apply_feature_profile, available_feature_profiles
 from store_sales.lightgbm_params import available_lightgbm_presets
 from store_sales.pipeline import run_pipeline

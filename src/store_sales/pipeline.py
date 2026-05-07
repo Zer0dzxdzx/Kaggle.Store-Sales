@@ -36,6 +36,23 @@ class ValidationWindow:
     validation_end: pd.Timestamp
 
 
+def validate_pipeline_config(config: PipelineConfig) -> None:
+    if config.early_stopping_rounds is None:
+        return
+
+    if config.model_type != "lightgbm":
+        raise ValueError("early_stopping_rounds is only supported for the LightGBM backend.")
+    if config.early_stopping_rounds < 1:
+        raise ValueError("early_stopping_rounds must be at least 1.")
+    if config.early_stopping_validation_days < 1:
+        raise ValueError("early_stopping_validation_days must be at least 1 when early stopping is enabled.")
+    if config.make_submission:
+        raise ValueError(
+            "Early-stopping LightGBM submissions are disabled because the current internal holdout "
+            "is only used for validation experiments. Rerun with --skip-submission or disable early stopping."
+        )
+
+
 def filter_training_window(train: pd.DataFrame, config: PipelineConfig) -> pd.DataFrame:
     filtered = train.copy()
     if config.train_start_date is not None:
@@ -308,6 +325,7 @@ def split_early_stopping_frame(
 
 
 def run_pipeline(config: PipelineConfig) -> PipelineOutputs:
+    validate_pipeline_config(config)
     config.output_dir.mkdir(parents=True, exist_ok=True)
 
     data = load_competition_data(config)

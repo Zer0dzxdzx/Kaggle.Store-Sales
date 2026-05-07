@@ -13,6 +13,7 @@
   - `lightgbm_regularized_es`
   - `lightgbm_conservative_es`
 - 增加训练尾部 holdout early stopping。
+- early stopping 只作为验证阶段的控件，不直接生成 submission。
 - 关注 mean RMSLE、worst fold、target family、non-target family 和 test-like slice 副作用。
 
 ## 候选结果
@@ -34,6 +35,16 @@
 ## 结论
 
 当前主模型仍然是 `lightgbm_baseline`。
+
+## 可复现性说明
+
+本轮 compare 运行时实验日志记录为 `4e6271d+dirty`。dirty workspace 来自当时并行存在的 feature-ablation 侧线改动：
+
+- `src/store_sales/cli.py`
+- `src/store_sales/feature_ablation.py`
+- `reports/feature_ablation/`
+
+这些文件不属于本轮 LightGBM 参数 sweep；本轮主结论仍以 `reports/validation/lightgbm_tuning/` 下的固定 baseline 特征、固定 August / pre-test 窗口结果为准。
 
 后续更值得做的方向是：
 
