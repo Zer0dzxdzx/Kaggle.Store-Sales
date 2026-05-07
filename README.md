@@ -12,7 +12,7 @@
 - 当前 best public submission：`LightGBM baseline = 0.50834`
 - 原 HistGBDT baseline public score：`0.58410`
 - 当前主验证框架：`August / pre-test explicit windows + stability checks`
-- 当前下一步主线：固化验证协议与 submission gate，然后继续做 LightGBM 稳定性优化
+- 当前下一步主线：沿已固化的 validation protocol 与 submission gate，继续做 LightGBM 稳定性优化
 
 ## 文档导航
 
@@ -27,6 +27,8 @@
 - 结构化实验日志：[docs/experiment_log.csv](docs/experiment_log.csv)
 - 简历深挖与面试准备文档：[docs/interview_deep_dive.md](docs/interview_deep_dive.md)
 - 项目进阶升级路线图：[docs/advanced_roadmap.md](docs/advanced_roadmap.md)
+- 验证协议文档：[docs/validation_protocol.md](docs/validation_protocol.md)
+- submission gate 文档：[docs/submission_gate.md](docs/submission_gate.md)
 
 ## 目录结构
 
@@ -149,7 +151,14 @@ PYTHONPATH=src python3 -m store_sales.stability_slice_report \
   --min-rows 30
 ```
 
-## 模型对比
+## 模型对比（历史三窗口口径）
+
+说明：
+
+- 这一节保留的是项目早期三窗口对比结果，主要用于回顾 baseline 演进过程
+- 它不是当前正式 submission protocol
+- 这里的 `0.401601` 一类数值，不能和当前 `August / pre-test explicit windows` 协议下的 `0.486767` 直接横比
+- 当前正式 protocol 见 [docs/validation_protocol.md](docs/validation_protocol.md)
 
 运行多模型验证对比：
 
@@ -169,7 +178,7 @@ python3 -m store_sales.cli compare \
 - `reports/model_comparison/comparison_report.md`
 - `artifacts/experiments/<experiment_name>/validation_summary.csv`
 
-当前已记录的三模型对比结果：
+当前已记录的历史三模型对比结果：
 
 - `histgbdt_baseline`：三窗口 mean RMSLE `0.401601`
 - `seasonal_naive`：三窗口 mean RMSLE `0.458129`

@@ -19,7 +19,8 @@
 | 3. EDA 解读 | 2026-04-19 | 从图表形成建模假设 | 判断哪些发现值得转成特征或实验 | 汇总已有 EDA 图表和统计结果 | `docs/eda_interpretation.md` | 初读完成 |
 | 4. 误差分析 | 2026-04-19 | 找出模型主要错在哪里 | 判断下一步优化方向，而不是盲目调参 | 生成 family/store/promotion/fold 分组误差报告并整理说明文档 | `docs/error_analysis_reading.md` 和 `reports/error_analysis/` | 初步完成 |
 | 5. 特征实验 | 2026-04-20 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile、跑验证、记录实验日志 | `docs/feature_experiments.md` 和 `docs/experiment_log.csv` | 实验 2 已提交验证，不替换 baseline；August validation 已补充 |
-| 6. 项目总结 | 待开始 | 把项目转成简历和面试可讲述内容 | 决定哪些结论真实、哪些不能夸大 | 整理 README 和总结初稿 | 简历项目描述与面试讲述稿 | 待开始 |
+| 6. 项目总结 | 2026-04-21 | 把项目转成简历和面试可讲述内容 | 决定哪些结论真实、哪些不能夸大 | 整理 README、简历摘要和面试深挖文档 | `docs/resume_project_summary.md` 和 `docs/interview_deep_dive.md` | 初版完成 |
+| 7. 验证协议与 Gate | 2026-05-07 | 固化正式验证口径与 submission 决策门槛 | 判断哪些指标是主判断，哪些只是风险提示，什么情况下值得提交 | 汇总历史成败案例、整理 validation protocol 与 submission gate 文档 | `docs/validation_protocol.md` 和 `docs/submission_gate.md` | 初版完成 |
 
 ## 阶段 0：读题记录
 
@@ -205,3 +206,20 @@
 - submission 已通过本地格式校验：行数/id 顺序与 `sample_submission.csv` 一致，无重复、缺失、负数或非有限值。
 - Kaggle public score 为 `0.50834`，明显优于 baseline public score `0.58410`。
 - 决策：LightGBM baseline 成为当前 best submission；下一步围绕 LightGBM 做参数收缩、early stopping 或稳定性约束。
+
+阶段 7 验证协议与 submission gate 初版已完成：
+
+- 正式主验证协议固定为 `August / pre-test explicit windows`。
+- 提交判断不再只看 mean RMSLE，而是必须结合 `worst fold`、`non-target families worsened`、`overweighted non-target regression slices` 和 promotion bin stability。
+- 当前参考方案拆成两层：
+  - 历史诊断参考：`histgbdt_baseline`
+  - 当前 submission 参考：`lightgbm_baseline`
+- gate 结果分成三档：
+  - `Promote`
+  - `Review`
+  - `Block`
+- 历史案例校准结论：
+  - `school_supplies_aug_promo` 应被 `Block`
+  - `baseline + extended blend` 应被 `Block`
+  - `lightgbm_baseline` 属于 `Review`，它是带 warning 的强候选，而不是无风险候选
+- 下一步不应直接盲目调参，而是先按这套 protocol/gate 跑后续 LightGBM 候选。

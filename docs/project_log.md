@@ -29,6 +29,63 @@
 - 风险/问题
 - 下一步
 
+### 2026-05-07
+
+#### 阶段 7（进阶）：固化验证协议与 submission gate
+
+- 新增 `docs/validation_protocol.md`，正式固定当前项目的主验证口径。
+- 新增 `docs/submission_gate.md`，把 submission 判断从模糊经验变成三档规则：`Promote / Review / Block`。
+- protocol 当前固定为：
+  - `train_start_date=2013-01-01`
+  - `validation_horizon=16`
+  - 递归预测
+  - 4 个 explicit windows：
+    - `2014-08-16:2014-08-31`
+    - `2015-08-16:2015-08-31`
+    - `2016-08-16:2016-08-31`
+    - `2017-07-31:2017-08-15`
+- submission reference 现在分成两层：
+  - 历史诊断控制：`histgbdt_baseline`
+  - 当前提交参考：`lightgbm_baseline`
+- count-based gate 当前冻结在：
+  - `histgbdt_baseline` 诊断控制口径
+  - `target-family="SCHOOL AND OFFICE SUPPLIES"`
+  - `min-rows=30`
+- gate 的核心结论不是“只要本地均值变好就提交”，而是：
+  - 先看主协议下的 mean RMSLE
+  - 再看 worst fold
+  - 最后必须结合 stability slices 和 weighted regression risk
+
+用历史案例校准后的结果：
+
+- `school_supplies_aug_promo`：
+  - 本地 mean 改善，但 weighted regression slices 过多
+  - 在新 gate 下应为 `Block`
+- `baseline + extended blend`：
+  - mean / worst fold 都改善，但 weighted regression slices 仍过多
+  - 在新 gate 下应为 `Block`
+- `lightgbm_baseline`：
+  - 当前 best public submission
+  - 但仍存在 fold 1/2 回退与 non-target slice 风险
+  - 在新 gate 下更适合定义为 `Review` 而不是“自动 promote”
+
+结果：
+
+- 项目现在第一次拥有了正式、可复述的 validation protocol。
+- 后续 LightGBM 调参与高级模型策略会在统一协议下推进，而不是继续混用不同分数口径。
+- `README.md` 也补充了 protocol / gate 文档入口。
+
+风险 / 问题：
+
+- 当前 gate 是基于有限历史案例校准出的第一版规则，不应被误解成 leaderboard 的绝对预测器。
+- `lightgbm_baseline` 当前虽然是 best public submission，但按新 gate 仍属于带 warning 的强候选，这正说明后续要继续做稳定性优化。
+
+下一步：
+
+1. 先以 `lightgbm_baseline` 为 submission reference，围绕同一协议做参数收缩和 early stopping 实验。
+2. 每个新候选都按 `validation_protocol.md + submission_gate.md` 输出统一判断。
+3. 如果多轮新实验都让 gate 和 public score 的关系更清晰，再考虑收紧或放宽阈值。
+
 ## 时间线
 
 ### 2026-04-15
