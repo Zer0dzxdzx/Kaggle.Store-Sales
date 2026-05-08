@@ -126,6 +126,7 @@ PYTHONPATH=src python3 -m store_sales.cli run \
 
 ### 面向作品集和面试
 
+- [最终结果总结](docs/final_result_summary.md)
 - [项目总结](docs/resume_project_summary.md)
 - [简历深挖与面试准备](docs/interview_deep_dive.md)
 - [进阶升级路线图](docs/advanced_roadmap.md)
@@ -258,7 +259,7 @@ PYTHONPATH=src python3 -m store_sales.cli ablate \
 
 当前优先级不是马上继续改模型，而是把项目作品集化：
 
-1. 补一份唯一可信的最终结果总结。
+1. 已补唯一可信的最终结果总结，见 [最终结果总结](docs/final_result_summary.md)。
 2. 补可复现性文档。
 3. 增加轻量测试和 sanity checks。
 4. 写一份完整 case study。

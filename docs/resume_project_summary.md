@@ -4,6 +4,8 @@
 
 Kaggle Store Sales is a store-family level time series forecasting project. The project goal is not a one-off notebook result, but a reproducible machine learning workflow covering raw data validation, feature engineering, time-based validation, model comparison, submission generation, and experiment logging.
 
+For the current single source of truth on scores, champion model, failed experiments, and residual risks, see [final_result_summary.md](final_result_summary.md).
+
 ## Current Deliverables
 
 | Deliverable | Status | Evidence |
@@ -24,14 +26,14 @@ Kaggle Store Sales is a store-family level time series forecasting project. The 
 
 ## Current Results
 
-| Experiment | Model | Feature Profile | Validation RMSLE Mean | Validation RMSLE Std |
-| --- | --- | --- | --- | --- |
-| `histgbdt_baseline` | HistGradientBoostingRegressor | `baseline` | `0.401601` | `0.017124` |
-| `seasonal_naive` | Weekly lag median benchmark | `baseline` | `0.458129` | `0.053525` |
-| `ridge_baseline` | Ridge regression | `baseline` | `2.734132` | `0.016583` |
-| `lightgbm_baseline` | LightGBM | `baseline` | `0.486767` on August/pre-test windows | `0.070236` |
+| Experiment | Model | Feature Profile | Validation Scheme | Validation RMSLE Mean | Validation RMSLE Std |
+| --- | --- | --- | --- | ---: | ---: |
+| `histgbdt_baseline` | HistGradientBoostingRegressor | `baseline` | Early 3-window validation | `0.401601` | `0.017124` |
+| `seasonal_naive` | Weekly lag median benchmark | `baseline` | Early 3-window validation | `0.458129` | `0.053525` |
+| `ridge_baseline` | Ridge regression | `baseline` | Early 3-window validation | `2.734132` | `0.016583` |
+| `lightgbm_baseline` | LightGBM | `baseline` | August / pre-test validation | `0.486767` | `0.070236` |
 
-The initial tree-model baseline improved multi-window mean RMSLE by about 12.3% over the seasonal lag benchmark. Ridge is much worse under the current ordinal-encoded feature setup, so it is useful as a negative control rather than a competitive candidate. The current best Kaggle public score is `0.50834` from the LightGBM baseline, improving over the original HistGBDT baseline score `0.58410`. The next optimization should focus on reducing validation-public mismatch and improving fold/slice stability rather than only chasing a single public score.
+The early 3-window results and August / pre-test results use different validation schemes, so they should not be directly compared as the same metric. The initial tree-model baseline improved early multi-window mean RMSLE by about 12.3% over the seasonal lag benchmark. Ridge is much worse under the current ordinal-encoded feature setup, so it is useful as a negative control rather than a competitive candidate. The current best Kaggle public score is `0.50834` from the LightGBM baseline, improving over the original HistGBDT baseline score `0.58410`. The next optimization should focus on reducing validation-public mismatch and improving fold/slice stability rather than only chasing a single public score.
 
 ## Resume Version
 
@@ -39,10 +41,10 @@ Kaggle: Store Sales Time Series Forecasting | Machine Learning / Time Series Ana
 
 - Built a reproducible forecasting pipeline for store-family retail sales, covering multi-table data integration, feature engineering, time-based validation, and Kaggle submission generation.
 - Engineered calendar, holiday, promotion, oil-price, store metadata, lag, and rolling-window features; used EDA to analyze sales patterns, zero-sales behavior, and validation instability.
-- Compared seasonal lag, ridge, HistGBDT, LightGBM, and blending candidates with time-based validation; improved Kaggle public score from `0.58410` to `0.50834` while using fold and slice stability checks to control overfitting risk.
+- Compared seasonal lag, ridge, HistGBDT, LightGBM, and blending candidates with time-based validation; improved Kaggle public score from `0.58410` to `0.50834` while using fold and slice stability checks to monitor and diagnose overfitting risk.
 
 ## Next Evidence to Add
 
-- Add a grouped error report by `family` and `store_nbr`.
-- Try `extended` seasonal lags and compare whether mean RMSLE or fold variance improves.
-- Continue LightGBM tuning with shrinkage, early stopping, and family/promotion stability checks.
+- Add lightweight tests and sanity checks for validation windows, lag safety, recursive forecasting, and submission format.
+- Add a reproducibility document that explains environment setup, data placement, commands, and expected outputs.
+- Add a polished case study document that turns the experiment history into a concise portfolio story.
