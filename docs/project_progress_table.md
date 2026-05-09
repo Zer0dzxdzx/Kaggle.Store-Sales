@@ -23,6 +23,7 @@
 | 7. 验证协议与 Gate | 2026-05-07 | 固化正式验证口径与 submission 决策门槛 | 判断哪些指标是主判断，哪些只是风险提示，什么情况下值得提交 | 汇总历史成败案例、整理 validation protocol 与 submission gate 文档 | `docs/validation_protocol.md` 和 `docs/submission_gate.md` | 初版完成 |
 | 8. LightGBM 系统化调参 | 2026-05-07 | 在统一验证协议下比较 LightGBM 参数候选 | 判断是否替换当前 `lightgbm_baseline`，以及 broad tuning 是否继续 | 跑 baseline/shrinkage/regularized/conservative 对比并整理报告 | `docs/lightgbm_tuning_log.md` 和 `reports/validation/lightgbm_tuning/` | 第一轮完成，baseline 继续保留 |
 | 9. 特征消融 | 2026-05-07 | 用移除实验判断哪些特征组真正贡献稳定收益 | 判断哪些特征应保留、哪些只是候选删除或重设计 | 实现 ablation 工具、输出各组移除后的多窗口结果 | `src/store_sales/feature_ablation.py` 和 `reports/feature_ablation/lightgbm_baseline_fast300/` | 第一轮完成，作为方向证据 |
+| 10. 作品集化：可复现性 | 2026-05-09 | 让别人能按文档从环境、数据到验证和 submission 重新跑通项目 | 判断哪些结果可以本地复现，哪些只能作为 Kaggle 外部评测记录 | 整理环境安装、数据放置、主验证命令、submission 生成和检查方式 | `docs/reproducibility.md` | 初版完成 |
 
 ## 阶段 0：读题记录
 
@@ -253,3 +254,13 @@
 - `oil` 移除后 mean delta 为 `-0.000803`，是小幅 removal candidate，但收益很小，需要复验。
 - `sales_lags` 移除后 mean RMSLE 变好，但 worst fold 变差 `+0.016073`，属于混合信号，不能简单删除。
 - 决策：短期保留 `sales_rolling` 和 `promotion`，把 `oil` 与 `sales_lags` 作为后续复验/重设计对象。
+
+阶段 10 作品集化可复现性初版已完成：
+
+- 新增 `docs/reproducibility.md`，把项目复现拆成环境安装、数据放置、smoke check、主验证协议复现和 submission 生成。
+- 明确区分“本地可复现结果”和“Kaggle public score 外部评测记录”。
+- 当前推荐复现当前 champion 的命令使用 `lightgbm_baseline + baseline feature profile + 4 个 August / pre-test explicit windows`。
+- 复现文档给出预期产物，包括 `validation_metrics.json`、`validation_summary.csv`、`validation_predictions_fold_*.csv` 和 `submission.csv`。
+- README 已加入可复现性文档入口。
+
+下一步应补轻量 tests / sanity checks，让可复现性不只靠人工读文档，也能用自动检查保护。

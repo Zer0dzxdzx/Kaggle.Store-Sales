@@ -29,6 +29,38 @@
 - 风险/问题
 - 下一步
 
+### 2026-05-09
+
+#### 作品集化第 3 天：可复现性说明
+
+- 目标：让项目从“我本机能跑”升级为“别人按文档也知道怎么跑、怎么检查、哪些结果能复现”。
+- 新增 `docs/reproducibility.md`。
+- 文档覆盖：
+  - Python 环境和依赖安装
+  - Kaggle 原始数据应放到 `data/raw/`
+  - smoke check 命令
+  - 当前主验证协议的 LightGBM 复现命令
+  - 重新生成 `submission.csv` 的命令
+  - validation summary 和 submission 格式检查方式
+  - 常见报错与修复方式
+- README 新增 `docs/reproducibility.md` 入口，并把“补可复现性文档”从待办改成已完成。
+
+结果：
+
+- 项目现在有了独立的复现入口。
+- 文档明确区分本地可复现内容和 Kaggle public score 这种外部评测记录。
+- 当前 champion 的复现命令固定在 `lightgbm_baseline + baseline feature profile + August / pre-test explicit windows`。
+
+风险 / 问题：
+
+- 当前还没有自动化 tests / sanity checks，复现仍主要依赖人工按文档执行。
+- LightGBM 和依赖版本可能导致最后几位小数轻微波动，因此文档只要求验证窗口、fold 数量和结果量级一致。
+
+下一步：
+
+1. 增加轻量测试，优先覆盖 validation window、lag safety、recursive forecast 和 submission format。
+2. 后续再补完整 case study 和面试讲述稿。
+
 ### 2026-05-07
 
 #### 阶段 7（进阶）：固化验证协议与 submission gate

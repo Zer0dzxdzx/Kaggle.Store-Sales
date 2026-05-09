@@ -24,7 +24,9 @@
 - 误差诊断：按 family、store、promotion bin、fold 和 test-like slices 拆解模型风险。
 - 实验复盘：记录成功和失败实验，尤其是本地验证变好但 Kaggle public score 变差的案例。
 
-## 当前结果
+## 当前结果摘要
+
+完整结果、失败实验和残余风险见 [最终结果总结](docs/final_result_summary.md)。下面只列 README 第一屏需要展示的代表性结果。
 
 | 方案 | 验证口径 | 本地 RMSLE | Kaggle public score | 结论 |
 | --- | --- | ---: | ---: | --- |
@@ -61,16 +63,21 @@ pip install -e .
 
 将 Kaggle 下载的原始 CSV 放到 `data/raw/` 下。
 
-必需文件：
+validation 和特征工程必需文件：
 
 ```text
 data/raw/
 ├── train.csv
 ├── test.csv
-├── sample_submission.csv
 ├── stores.csv
 ├── oil.csv
 └── holidays_events.csv
+```
+
+完整复现 submission 还需要：
+
+```text
+data/raw/sample_submission.csv
 ```
 
 可选文件：
@@ -128,6 +135,7 @@ PYTHONPATH=src python3 -m store_sales.cli run \
 
 - [最终结果总结](docs/final_result_summary.md)
 - [项目总结](docs/resume_project_summary.md)
+- [可复现性说明](docs/reproducibility.md)
 - [简历深挖与面试准备](docs/interview_deep_dive.md)
 - [进阶升级路线图](docs/advanced_roadmap.md)
 
@@ -260,7 +268,7 @@ PYTHONPATH=src python3 -m store_sales.cli ablate \
 当前优先级不是马上继续改模型，而是把项目作品集化：
 
 1. 已补唯一可信的最终结果总结，见 [最终结果总结](docs/final_result_summary.md)。
-2. 补可复现性文档。
+2. 已补可复现性文档，见 [可复现性说明](docs/reproducibility.md)。
 3. 增加轻量测试和 sanity checks。
 4. 写一份完整 case study。
 5. 整理面试讲述稿。
