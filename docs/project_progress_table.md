@@ -24,6 +24,7 @@
 | 8. LightGBM 系统化调参 | 2026-05-07 | 在统一验证协议下比较 LightGBM 参数候选 | 判断是否替换当前 `lightgbm_baseline`，以及 broad tuning 是否继续 | 跑 baseline/shrinkage/regularized/conservative 对比并整理报告 | `docs/lightgbm_tuning_log.md` 和 `reports/validation/lightgbm_tuning/` | 第一轮完成，baseline 继续保留 |
 | 9. 特征消融 | 2026-05-07 | 用移除实验判断哪些特征组真正贡献稳定收益 | 判断哪些特征应保留、哪些只是候选删除或重设计 | 实现 ablation 工具、输出各组移除后的多窗口结果 | `src/store_sales/feature_ablation.py` 和 `reports/feature_ablation/lightgbm_baseline_fast300/` | 第一轮完成，作为方向证据 |
 | 10. 作品集化：可复现性 | 2026-05-09 | 让别人能按文档从环境、数据到验证和 submission 重新跑通项目 | 判断哪些结果可以本地复现，哪些只能作为 Kaggle 外部评测记录 | 整理环境安装、数据放置、主验证命令、submission 生成和检查方式 | `docs/reproducibility.md` | 初版完成 |
+| 11. 作品集化：轻量测试 | 2026-05-09 | 用自动化 sanity checks 保护验证、lag、递归预测和 submission 格式 | 判断哪些测试最能防止项目关键逻辑回归，而不是追求形式化覆盖率 | 编写 pytest 小样本测试并同步 README / 复现文档 | `tests/` 和 `pyproject.toml` | 初版完成，11 个测试通过 |
 
 ## 阶段 0：读题记录
 
@@ -263,4 +264,12 @@
 - 复现文档给出预期产物，包括 `validation_metrics.json`、`validation_summary.csv`、`validation_predictions_fold_*.csv` 和 `submission.csv`。
 - README 已加入可复现性文档入口。
 
-下一步应补轻量 tests / sanity checks，让可复现性不只靠人工读文档，也能用自动检查保护。
+阶段 11 作品集化轻量测试初版已完成：
+
+- 新增 `tests/`，使用小样本 DataFrame 测试关键逻辑，不依赖 Kaggle 全量数据。
+- 测试覆盖 validation windows、submission frame、training lag safety、recursive lag safety 和 recursive forecast 写回逻辑。
+- `pyproject.toml` 新增 `test` optional dependency 和 pytest 默认测试目录。
+- README 和 `docs/reproducibility.md` 已加入 `python3 -m pytest -q`。
+- 本地结果：`11 passed`。
+
+下一步应写完整 case study，把当前项目的业务问题、验证方式、实验转折、最终结果和经验教训串成一条作品集叙事。

@@ -31,6 +31,40 @@
 
 ### 2026-05-09
 
+#### 作品集化第 4 天：轻量测试 / sanity checks
+
+- 目标：给项目中最容易影响可信度的基础逻辑增加自动检查，不依赖 Kaggle 全量数据。
+- 新增 `tests/`：
+  - `tests/test_validation_windows.py`
+  - `tests/test_submission_frame.py`
+  - `tests/test_feature_lag_safety.py`
+  - `tests/test_recursive_forecast.py`
+  - `tests/conftest.py`
+- 更新 `pyproject.toml`：
+  - 新增 `test` optional dependency：`pytest>=8`
+  - 新增 pytest 默认测试目录：`tests`
+- README 和 `docs/reproducibility.md` 补充 `python3 -m pytest -q` 的运行方式。
+
+结果：
+
+- `python3 -m pytest -q` 通过。
+- 当前共有 `11` 个轻量测试。
+- 覆盖范围包括：
+  - rolling / explicit validation windows 的时间顺序和重叠检查
+  - submission id 对齐、重复 id、缺失/额外 id、非有限预测值
+  - 训练 lag 和递归 lag 不能使用预测当天真实 sales
+  - recursive forecast 必须把前一天预测写回 sales history
+
+风险 / 问题：
+
+- 当前测试是 sanity checks，不是完整集成测试。
+- 还没有 GitHub Actions CI，因此测试仍需要本地手动运行。
+
+下一步：
+
+1. 写完整 case study，把项目从“实验堆叠”收束成一条面试可讲的分析主线。
+2. 后续可补 CI，让 `pytest` 在 push / PR 时自动运行。
+
 #### 作品集化第 3 天：可复现性说明
 
 - 目标：让项目从“我本机能跑”升级为“别人按文档也知道怎么跑、怎么检查、哪些结果能复现”。

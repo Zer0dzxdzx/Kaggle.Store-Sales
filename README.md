@@ -59,6 +59,13 @@ pip install -e '.[lightgbm]'
 pip install -e .
 ```
 
+如果要运行轻量测试：
+
+```bash
+pip install -e '.[test]'
+python3 -m pytest -q
+```
+
 ### 2. 准备数据
 
 将 Kaggle 下载的原始 CSV 放到 `data/raw/` 下。
@@ -238,6 +245,14 @@ PYTHONPATH=src python3 -m store_sales.cli ablate \
   --model-param n_estimators=300
 ```
 
+### 运行轻量测试
+
+```bash
+python3 -m pytest -q
+```
+
+当前测试不依赖 Kaggle 全量数据，主要覆盖 validation windows、submission frame、lag safety 和 recursive forecast。
+
 ## 重要建模原则
 
 ### 为什么不能随机切分
@@ -258,7 +273,7 @@ PYTHONPATH=src python3 -m store_sales.cli ablate \
 
 ## 当前局限
 
-- 还没有完整 `tests/` 和 CI，下一阶段会补轻量 sanity checks。
+- 已有轻量 `tests/` sanity checks，但还没有 CI 和完整端到端集成测试。
 - 当前 validation gate 是基于有限历史案例校准出来的第一版规则，不应被理解成 leaderboard 的绝对预测器。
 - LightGBM baseline 是当前 best public submission，但仍存在 fold 1/2 回退和部分非目标 family regression 风险。
 - 项目还没有做更高级的模型集成或 private leaderboard 级别优化。
@@ -269,6 +284,6 @@ PYTHONPATH=src python3 -m store_sales.cli ablate \
 
 1. 已补唯一可信的最终结果总结，见 [最终结果总结](docs/final_result_summary.md)。
 2. 已补可复现性文档，见 [可复现性说明](docs/reproducibility.md)。
-3. 增加轻量测试和 sanity checks。
+3. 已增加轻量测试和 sanity checks。
 4. 写一份完整 case study。
 5. 整理面试讲述稿。

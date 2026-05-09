@@ -58,6 +58,15 @@ python3 -m pip install -e .
 PYTHONPATH=src python3 -m store_sales.cli --help
 ```
 
+如果要运行轻量测试：
+
+```bash
+python3 -m pip install -e '.[test]'
+python3 -m pytest -q
+```
+
+这些测试不依赖 Kaggle 全量数据，主要检查 validation windows、submission 格式、lag safety 和 recursive forecast。
+
 如果要确认 LightGBM 是否安装成功：
 
 ```bash
