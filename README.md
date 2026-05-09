@@ -142,6 +142,7 @@ PYTHONPATH=src python3 -m store_sales.cli run \
 
 - [最终结果总结](docs/final_result_summary.md)
 - [项目总结](docs/resume_project_summary.md)
+- [项目案例复盘](docs/case_study.md)
 - [可复现性说明](docs/reproducibility.md)
 - [简历深挖与面试准备](docs/interview_deep_dive.md)
 - [进阶升级路线图](docs/advanced_roadmap.md)
@@ -285,5 +286,5 @@ python3 -m pytest -q
 1. 已补唯一可信的最终结果总结，见 [最终结果总结](docs/final_result_summary.md)。
 2. 已补可复现性文档，见 [可复现性说明](docs/reproducibility.md)。
 3. 已增加轻量测试和 sanity checks。
-4. 写一份完整 case study。
+4. 已写完整 case study，见 [项目案例复盘](docs/case_study.md)。
 5. 整理面试讲述稿。

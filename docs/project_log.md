@@ -31,6 +31,38 @@
 
 ### 2026-05-09
 
+#### 作品集化第 5 天：case study 初版
+
+- 目标：把项目从分散的日志、报告和实验记录，整理成一条面试和作品集可讲述的完整项目故事。
+- 新增 `docs/case_study.md`。
+- case study 按以下主线组织：
+  - 业务问题和预测边界
+  - 多表数据理解
+  - EDA 到建模假设
+  - baseline 和误差分析
+  - `school_supplies_aug_promo` 失败实验
+  - 验证协议升级
+  - LightGBM 当前 champion
+  - 特征消融和工程化收口
+  - 当前结论、局限和面试讲述版本
+- README 新增 case study 入口。
+- `docs/resume_project_summary.md` 的下一步从“补测试/复现/case study”更新为更后续的 interview talk track、CI 和稳定性优化。
+
+结果：
+
+- 项目现在有了完整主叙事文档，不再只依赖 README 或零散日志解释。
+- 文档明确说明当前结果、失败实验、验证边界和不能夸大的地方。
+
+风险 / 问题：
+
+- case study 是第一版，后续还可以继续压缩成更短的面试讲稿。
+- 当前仍没有 CI，测试需要本地手动运行。
+
+下一步：
+
+1. 整理 `docs/interview_talk_track.md`，把 30 秒、60 秒和追问回答模板单独收口。
+2. 可选增加 GitHub Actions，让 `pytest` 自动运行。
+
 #### 作品集化第 4 天：轻量测试 / sanity checks
 
 - 目标：给项目中最容易影响可信度的基础逻辑增加自动检查，不依赖 Kaggle 全量数据。

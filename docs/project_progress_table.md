@@ -25,6 +25,7 @@
 | 9. 特征消融 | 2026-05-07 | 用移除实验判断哪些特征组真正贡献稳定收益 | 判断哪些特征应保留、哪些只是候选删除或重设计 | 实现 ablation 工具、输出各组移除后的多窗口结果 | `src/store_sales/feature_ablation.py` 和 `reports/feature_ablation/lightgbm_baseline_fast300/` | 第一轮完成，作为方向证据 |
 | 10. 作品集化：可复现性 | 2026-05-09 | 让别人能按文档从环境、数据到验证和 submission 重新跑通项目 | 判断哪些结果可以本地复现，哪些只能作为 Kaggle 外部评测记录 | 整理环境安装、数据放置、主验证命令、submission 生成和检查方式 | `docs/reproducibility.md` | 初版完成 |
 | 11. 作品集化：轻量测试 | 2026-05-09 | 用自动化 sanity checks 保护验证、lag、递归预测和 submission 格式 | 判断哪些测试最能防止项目关键逻辑回归，而不是追求形式化覆盖率 | 编写 pytest 小样本测试并同步 README / 复现文档 | `tests/` 和 `pyproject.toml` | 初版完成，11 个测试通过 |
+| 12. 作品集化：case study | 2026-05-09 | 把实验过程整理成可复述的项目故事 | 判断哪些内容最能体现数据科学能力，哪些结果不能夸大 | 整理业务问题、验证、实验转折、结果和面试讲述版本 | `docs/case_study.md` | 初版完成 |
 
 ## 阶段 0：读题记录
 
@@ -272,4 +273,14 @@
 - README 和 `docs/reproducibility.md` 已加入 `python3 -m pytest -q`。
 - 本地结果：`11 passed`。
 
-下一步应写完整 case study，把当前项目的业务问题、验证方式、实验转折、最终结果和经验教训串成一条作品集叙事。
+阶段 11 之后的下一步原本是写完整 case study；该事项已在阶段 12 完成。
+
+阶段 12 作品集化 case study 初版已完成：
+
+- 新增 `docs/case_study.md`，把项目主线整理为问题、数据、EDA、baseline、误差分析、失败实验、验证协议、模型对比、特征消融和工程化收口。
+- case study 中明确当前 champion 是 `lightgbm_baseline`，public score 为 `0.50834`，原始 HistGBDT baseline public score 为 `0.58410`。
+- 文档单独解释 `school_supplies_aug_promo` 为什么是有价值的失败实验。
+- 文档包含 30 秒和较完整的面试讲述版本。
+- README 已加入 case study 入口。
+
+下一步应整理独立的 interview talk track，把 case study 压缩成面试现场更自然的 30 秒、60 秒和追问回答模板。

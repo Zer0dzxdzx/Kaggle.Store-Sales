@@ -115,15 +115,15 @@
 
 | 特征组 | 消融信号 | 解释 |
 | --- | --- | --- |
-| `sales_rolling` | 移除后 mean delta `+0.061111` | 当前最重要的特征组 |
-| `promotion` | 移除后 mean delta `+0.042030` | 促销特征必须保留，后续可继续增强 |
+| `sales_rolling` | 移除后 mean delta `+0.061111` | fast300 消融下最强正向信号 |
+| `promotion` | 移除后 mean delta `+0.042030` | fast300 消融下强正向信号，短期建议保留 |
 | `calendar` | mean 变差但 worst fold 变好 | mixed 信号，不能直接删除 |
 | `oil` | 移除后 mean delta `-0.000803` | 小幅 removal candidate，但收益太小，需要复验 |
 | `sales_lags` | mean 变好但 worst fold 变差 | mixed 信号，适合重设计，不适合简单删除 |
 
 当前最稳妥的特征结论：
 
-- 保留 `sales_rolling` 和 `promotion`。
+- `sales_rolling` 和 `promotion` 在 fast300 消融下显示出强正向信号，短期建议保留。
 - 不急着删除 `calendar`、`sales_lags` 或 `oil`。
 - 后续如果要改默认特征，必须重新通过主验证协议和 submission gate。
 
