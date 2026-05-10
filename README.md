@@ -143,6 +143,7 @@ PYTHONPATH=src python3 -m store_sales.cli run \
 - [最终结果总结](docs/final_result_summary.md)
 - [项目总结](docs/resume_project_summary.md)
 - [项目案例复盘](docs/case_study.md)
+- [面试讲述稿](docs/interview_talk_track.md)
 - [可复现性说明](docs/reproducibility.md)
 - [简历深挖与面试准备](docs/interview_deep_dive.md)
 - [进阶升级路线图](docs/advanced_roadmap.md)
@@ -281,10 +282,8 @@ python3 -m pytest -q
 
 ## 下一阶段
 
-当前优先级不是马上继续改模型，而是把项目作品集化：
+作品集化收尾已经完成，下一步可以从三个方向继续：
 
-1. 已补唯一可信的最终结果总结，见 [最终结果总结](docs/final_result_summary.md)。
-2. 已补可复现性文档，见 [可复现性说明](docs/reproducibility.md)。
-3. 已增加轻量测试和 sanity checks。
-4. 已写完整 case study，见 [项目案例复盘](docs/case_study.md)。
-5. 整理面试讲述稿。
+1. 增加 GitHub Actions CI，让 `python3 -m pytest -q` 自动运行。
+2. 继续围绕 fold / family / promotion stability 优化模型，而不是盲目追 public score。
+3. 面试前根据具体岗位 JD 精简 [面试讲述稿](docs/interview_talk_track.md)。

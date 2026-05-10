@@ -45,6 +45,6 @@ Kaggle: Store Sales Time Series Forecasting | Machine Learning / Time Series Ana
 
 ## Next Evidence to Add
 
-- Add an interview talk-track document that separates 30-second, 60-second, and deep-dive answers.
 - Add CI so lightweight pytest sanity checks run automatically on future changes.
 - Continue improving residual fold/family/promotion stability before claiming a more mature forecasting system.
+- Optionally add a short project demo checklist for live interview walkthroughs.
