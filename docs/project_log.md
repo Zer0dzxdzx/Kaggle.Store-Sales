@@ -3,7 +3,7 @@
 ## 项目概览
 
 - 项目名称：`Kaggle Store Sales`
-- 仓库路径：`/Users/du/Desktop/codex/Store Sales`
+- 仓库路径：项目根目录
 - GitHub 仓库：`https://github.com/Zer0dzxdzx/Kaggle.Store-Sales`
 - 当前目标：围绕 Kaggle `Store Sales - Time Series Forecasting` 比赛，建立可迭代的时序预测工程基线，并逐步提升验证与榜单表现。
 - 结构化实验记录文件：`docs/experiment_log.csv`
@@ -28,6 +28,33 @@
 - 结果
 - 风险/问题
 - 下一步
+
+### 2026-05-11
+
+#### 作品集化第 7 天：文档导航与 CI 收口
+
+- 目标：把一周作品集化改造收口，让仓库更容易被招聘方、面试官或未来的自己快速审阅和验证。
+- 新增 `docs/index.md`，作为项目文档导航。
+- 新增 `.github/workflows/tests.yml`，在 push / pull request 到 `main` 时运行轻量 pytest sanity checks。
+- README 增加文档导航入口、CI 说明和工程检查说明。
+- 项目进程表同步新增阶段 14。
+
+结果：
+
+- 项目现在不只“有很多文档”，而是有了明确入口：README 看项目首页，`docs/index.md` 看文档地图。
+- 轻量测试可以在 GitHub Actions 上自动运行，增强作品集可信度。
+- 第 1 到第 7 天的作品集化闭环完成：README、最终结果、复现、测试、case study、面试讲述和 CI / 文档导航。
+
+风险 / 问题：
+
+- CI 当前只覆盖轻量 sanity checks，不依赖 Kaggle 原始数据，也不是完整端到端训练测试。
+- 如果未来引入更复杂依赖或大数据集复现，还需要增加缓存策略和更重的 smoke test。
+
+下一步：
+
+1. 按具体岗位 JD 微调面试讲稿。
+2. 继续做模型稳定性优化，重点看 fold / family / promotion slices。
+3. 可选增加小样本端到端 CLI smoke test。
 
 ### 2026-05-10
 

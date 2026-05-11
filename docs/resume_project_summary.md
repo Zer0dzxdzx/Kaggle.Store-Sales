@@ -45,6 +45,6 @@ Kaggle: Store Sales Time Series Forecasting | Machine Learning / Time Series Ana
 
 ## Next Evidence to Add
 
-- Add CI so lightweight pytest sanity checks run automatically on future changes.
 - Continue improving residual fold/family/promotion stability before claiming a more mature forecasting system.
+- Add a small end-to-end CLI smoke test beyond the current lightweight pytest checks.
 - Optionally add a short project demo checklist for live interview walkthroughs.

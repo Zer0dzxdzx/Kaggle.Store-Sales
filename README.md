@@ -12,7 +12,7 @@
 | 当前 best public score | `0.50834`，来自 `LightGBM baseline` |
 | 原始 HistGBDT baseline public score | `0.58410` |
 | 当前主验证协议 | `August / pre-test explicit windows + recursive forecasting + stability checks` |
-| 当前项目定位 | 核心建模 workflow 已完成，正在做作品集化收尾 |
+| 当前项目定位 | 核心建模 workflow 与作品集化收尾已完成，后续进入稳定性优化 |
 
 ## 这个项目展示了什么
 
@@ -140,6 +140,7 @@ PYTHONPATH=src python3 -m store_sales.cli run \
 
 ### 面向作品集和面试
 
+- [文档导航](docs/index.md)
 - [最终结果总结](docs/final_result_summary.md)
 - [项目总结](docs/resume_project_summary.md)
 - [项目案例复盘](docs/case_study.md)
@@ -185,6 +186,8 @@ PYTHONPATH=src python3 -m store_sales.cli run \
 .
 ├── data/
 │   └── raw/                    # Kaggle 原始数据，gitignored
+├── .github/
+│   └── workflows/tests.yml     # GitHub Actions 轻量测试
 ├── artifacts/                  # 训练、验证、submission 输出，gitignored
 ├── docs/                       # 项目说明、学习记录、验证协议和面试文档
 ├── reports/                    # EDA、误差分析、验证、消融和调参报告
@@ -273,9 +276,15 @@ python3 -m pytest -q
 
 项目中出现过本地验证变好但 Kaggle public score 变差的实验。原因是一个候选方案可能改善目标切片，但伤害非目标 family 或测试期权重更高的 promotion 切片。因此当前 submission 决策不只看 mean RMSLE，还看 worst fold、non-target regression 和 test-like distribution risk。
 
+## 工程检查
+
+- 本地轻量测试：`python3 -m pytest -q`
+- GitHub Actions：push / pull request 到 `main` 时自动运行 `python -m pytest -q`
+- 测试目标：validation windows、submission frame、lag safety 和 recursive forecast sanity checks
+
 ## 当前局限
 
-- 已有轻量 `tests/` sanity checks，但还没有 CI 和完整端到端集成测试。
+- 已有轻量 `tests/` sanity checks 和 GitHub Actions CI，但还没有完整端到端集成测试。
 - 当前 validation gate 是基于有限历史案例校准出来的第一版规则，不应被理解成 leaderboard 的绝对预测器。
 - LightGBM baseline 是当前 best public submission，但仍存在 fold 1/2 回退和部分非目标 family regression 风险。
 - 项目还没有做更高级的模型集成或 private leaderboard 级别优化。
@@ -284,6 +293,6 @@ python3 -m pytest -q
 
 作品集化收尾已经完成，下一步可以从三个方向继续：
 
-1. 增加 GitHub Actions CI，让 `python3 -m pytest -q` 自动运行。
-2. 继续围绕 fold / family / promotion stability 优化模型，而不是盲目追 public score。
+1. 继续围绕 fold / family / promotion stability 优化模型，而不是盲目追 public score。
+2. 补充更重的端到端 smoke test，在小样本或缓存数据上跑完整 CLI。
 3. 面试前根据具体岗位 JD 精简 [面试讲述稿](docs/interview_talk_track.md)。

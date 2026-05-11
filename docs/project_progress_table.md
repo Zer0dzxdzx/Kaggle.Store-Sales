@@ -27,6 +27,7 @@
 | 11. 作品集化：轻量测试 | 2026-05-09 | 用自动化 sanity checks 保护验证、lag、递归预测和 submission 格式 | 判断哪些测试最能防止项目关键逻辑回归，而不是追求形式化覆盖率 | 编写 pytest 小样本测试并同步 README / 复现文档 | `tests/` 和 `pyproject.toml` | 初版完成，11 个测试通过 |
 | 12. 作品集化：case study | 2026-05-09 | 把实验过程整理成可复述的项目故事 | 判断哪些内容最能体现数据科学能力，哪些结果不能夸大 | 整理业务问题、验证、实验转折、结果和面试讲述版本 | `docs/case_study.md` | 初版完成 |
 | 13. 作品集化：面试讲述稿 | 2026-05-10 | 把 case study 压缩成面试现场可讲的话术 | 判断不同岗位该强调数据分析、验证设计还是建模对比 | 整理 15/30/60 秒版本、高频追问、岗位版本和禁用说法 | `docs/interview_talk_track.md` | 初版完成 |
+| 14. 作品集化：文档导航与 CI | 2026-05-11 | 把作品集材料收口成易审阅、可自动检查的仓库 | 判断文档入口如何分层，CI 先覆盖哪些关键 sanity checks | 新增文档导航和 GitHub Actions pytest workflow | `docs/index.md` 和 `.github/workflows/tests.yml` | 初版完成 |
 
 ## 阶段 0：读题记录
 
@@ -294,4 +295,11 @@
 - 文档单独区分数据分析岗位版本和数据科学岗位版本。
 - README 已加入面试讲述稿入口。
 
-下一步可以补 CI，或根据具体岗位 JD 定制一版更短的面试讲稿。
+阶段 14 作品集化文档导航与 CI 初版已完成：
+
+- 新增 `docs/index.md`，把 README、结果总结、case study、复现、验证协议、学习记录、报告和面试材料分层整理。
+- 新增 `.github/workflows/tests.yml`，在 push / pull request 到 `main` 时运行 `python -m pytest -q`。
+- README 增加文档导航入口、CI 说明和工程检查说明。
+- 当前 CI 只覆盖 11 个轻量 sanity checks，不依赖 Kaggle 全量数据。
+
+一周作品集化收尾已完成。下一步可以根据具体岗位 JD 定制更短讲稿，或继续做模型稳定性优化。
