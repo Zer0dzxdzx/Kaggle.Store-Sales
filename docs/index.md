@@ -1,6 +1,6 @@
 # Store Sales 文档导航
 
-这份导航用于快速判断“现在该读哪份文档”。README 负责项目首页；这里负责把学习记录、验证协议、实验结果和面试材料分层整理。
+这份导航用于快速判断“现在该读哪份文档”。README 负责项目首页；这里负责把学习记录、验证协议、实验结果和公开展示材料分层整理。
 
 ## 1. 快速了解项目
 
@@ -11,7 +11,6 @@
 | 1 | [README](../README.md) | 项目做什么、当前最好结果、怎么运行 |
 | 2 | [最终结果总结](final_result_summary.md) | 当前 champion、public score、失败实验和残余风险 |
 | 3 | [项目案例复盘](case_study.md) | 把项目串成完整数据科学案例 |
-| 4 | [面试讲述稿](interview_talk_track.md) | 15 秒到 3 分钟版本，以及常见追问 |
 
 ## 2. 复现实验和提交
 
@@ -51,13 +50,13 @@
 | [LightGBM tuning](../reports/validation/lightgbm_tuning/comparison_report.md) | 第一轮参数候选对比 |
 | [Feature ablation](../reports/feature_ablation/lightgbm_baseline_fast300/ablation_report.md) | 第一轮特征组消融 |
 
-## 5. 面试准备
+## 5. 公开展示材料
 
 | 文档 | 用法 |
 | --- | --- |
 | [项目总结](resume_project_summary.md) | 简历项目描述和结果口径 |
-| [简历深挖与面试准备](interview_deep_dive.md) | 更详细的追问准备 |
-| [面试讲述稿](interview_talk_track.md) | 面试现场口语版，不建议照背 |
+
+面试讲稿、简历深挖和岗位定制回答属于私人备考材料，不放入公开仓库。
 
 ## 6. 当前状态
 

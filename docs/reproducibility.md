@@ -318,10 +318,10 @@ python3 -m pip install -e '.[lightgbm]'
 
 这是正常的。当前数据是 `date + store_nbr + family` 粒度，多窗口递归验证会重复训练和预测。调试环境优先跑 smoke check，正式复现再跑 4 个 explicit windows。
 
-## 面试时怎么解释可复现性
+## 可复现性说明口径
 
-可以这样说：
+公开项目中，可复现性主要体现在三个层次：
 
-> 我把项目拆成了可复现的几个层次：原始数据不进 Git，但数据目录、依赖安装、验证命令和预期输出都写清楚了。核心结果不是只写在 README 里，而是可以通过固定的时间窗口验证重新生成 validation summary 和 submission。Kaggle public score 是线上结果，所以我把它作为实验记录保存，而不是伪装成本地指标。
-
-这句话的重点是：你知道哪些东西能本地复现，哪些东西只能记录为外部评测结果。
+- 原始 Kaggle 数据不进入 Git，但 `data/raw/` 的文件要求、依赖安装命令和运行命令都有明确说明。
+- 本地验证结果可以通过固定的 validation windows 重新生成，包括 `validation_summary.csv`、fold predictions 和 submission 文件。
+- Kaggle public score 属于外部评测结果，只在实验日志和结果总结中记录，不伪装成本地可复现指标。

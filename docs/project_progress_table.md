@@ -19,14 +19,14 @@
 | 3. EDA 解读 | 2026-04-19 | 从图表形成建模假设 | 判断哪些发现值得转成特征或实验 | 汇总已有 EDA 图表和统计结果 | `docs/eda_interpretation.md` | 初读完成 |
 | 4. 误差分析 | 2026-04-19 | 找出模型主要错在哪里 | 判断下一步优化方向，而不是盲目调参 | 生成 family/store/promotion/fold 分组误差报告并整理说明文档 | `docs/error_analysis_reading.md` 和 `reports/error_analysis/` | 初步完成 |
 | 5. 特征实验 | 2026-04-20 | 用实验验证特征是否有用 | 决定特征保留、删除或继续修改 | 实现 feature profile、跑验证、记录实验日志 | `docs/feature_experiments.md` 和 `docs/experiment_log.csv` | 实验 2 已提交验证，不替换 baseline；August validation 已补充 |
-| 6. 项目总结 | 2026-04-21 | 把项目转成简历和面试可讲述内容 | 决定哪些结论真实、哪些不能夸大 | 整理 README、简历摘要和面试深挖文档 | `docs/resume_project_summary.md` 和 `docs/interview_deep_dive.md` | 初版完成 |
+| 6. 项目总结 | 2026-04-21 | 把项目转成简历和公开项目总结 | 决定哪些结论真实、哪些不能夸大 | 整理 README 和简历摘要 | `docs/resume_project_summary.md` | 初版完成 |
 | 7. 验证协议与 Gate | 2026-05-07 | 固化正式验证口径与 submission 决策门槛 | 判断哪些指标是主判断，哪些只是风险提示，什么情况下值得提交 | 汇总历史成败案例、整理 validation protocol 与 submission gate 文档 | `docs/validation_protocol.md` 和 `docs/submission_gate.md` | 初版完成 |
 | 8. LightGBM 系统化调参 | 2026-05-07 | 在统一验证协议下比较 LightGBM 参数候选 | 判断是否替换当前 `lightgbm_baseline`，以及 broad tuning 是否继续 | 跑 baseline/shrinkage/regularized/conservative 对比并整理报告 | `docs/lightgbm_tuning_log.md` 和 `reports/validation/lightgbm_tuning/` | 第一轮完成，baseline 继续保留 |
 | 9. 特征消融 | 2026-05-07 | 用移除实验判断哪些特征组真正贡献稳定收益 | 判断哪些特征应保留、哪些只是候选删除或重设计 | 实现 ablation 工具、输出各组移除后的多窗口结果 | `src/store_sales/feature_ablation.py` 和 `reports/feature_ablation/lightgbm_baseline_fast300/` | 第一轮完成，作为方向证据 |
 | 10. 作品集化：可复现性 | 2026-05-09 | 让别人能按文档从环境、数据到验证和 submission 重新跑通项目 | 判断哪些结果可以本地复现，哪些只能作为 Kaggle 外部评测记录 | 整理环境安装、数据放置、主验证命令、submission 生成和检查方式 | `docs/reproducibility.md` | 初版完成 |
 | 11. 作品集化：轻量测试 | 2026-05-09 | 用自动化 sanity checks 保护验证、lag、递归预测和 submission 格式 | 判断哪些测试最能防止项目关键逻辑回归，而不是追求形式化覆盖率 | 编写 pytest 小样本测试并同步 README / 复现文档 | `tests/` 和 `pyproject.toml` | 初版完成，11 个测试通过 |
-| 12. 作品集化：case study | 2026-05-09 | 把实验过程整理成可复述的项目故事 | 判断哪些内容最能体现数据科学能力，哪些结果不能夸大 | 整理业务问题、验证、实验转折、结果和面试讲述版本 | `docs/case_study.md` | 初版完成 |
-| 13. 作品集化：面试讲述稿 | 2026-05-10 | 把 case study 压缩成面试现场可讲的话术 | 判断不同岗位该强调数据分析、验证设计还是建模对比 | 整理 15/30/60 秒版本、高频追问、岗位版本和禁用说法 | `docs/interview_talk_track.md` | 初版完成 |
+| 12. 作品集化：case study | 2026-05-09 | 把实验过程整理成可复述的项目故事 | 判断哪些内容最能体现数据科学能力，哪些结果不能夸大 | 整理业务问题、验证、实验转折、结果和对外展示摘要 | `docs/case_study.md` | 初版完成 |
+| 13. 作品集化：私有沟通提纲 | 2026-05-10 | 把 case study 压缩成正式沟通时可讲清的版本 | 判断不同岗位该强调数据分析、验证设计还是建模对比 | 整理不同长度摘要、常见问题、岗位版本和禁用说法 | 本地私有材料，不公开提交 | 初版完成 |
 | 14. 作品集化：文档导航与 CI | 2026-05-11 | 把作品集材料收口成易审阅、可自动检查的仓库 | 判断文档入口如何分层，CI 先覆盖哪些关键 sanity checks | 新增文档导航和 GitHub Actions pytest workflow | `docs/index.md` 和 `.github/workflows/tests.yml` | 初版完成 |
 
 ## 阶段 0：读题记录
@@ -282,24 +282,24 @@
 - 新增 `docs/case_study.md`，把项目主线整理为问题、数据、EDA、baseline、误差分析、失败实验、验证协议、模型对比、特征消融和工程化收口。
 - case study 中明确当前 champion 是 `lightgbm_baseline`，public score 为 `0.50834`，原始 HistGBDT baseline public score 为 `0.58410`。
 - 文档单独解释 `school_supplies_aug_promo` 为什么是有价值的失败实验。
-- 文档包含 30 秒和较完整的面试讲述版本。
+- 文档包含对外展示摘要和完整项目叙事。
 - README 已加入 case study 入口。
 
-下一步应整理独立的 interview talk track，把 case study 压缩成面试现场更自然的 30 秒、60 秒和追问回答模板。
+下一步应整理独立的私有沟通提纲，把 case study 压缩成正式沟通时更自然的项目摘要和问题回答模板。
 
-阶段 13 作品集化面试讲述稿初版已完成：
+阶段 13 作品集化私有沟通提纲初版已完成：
 
-- 新增 `docs/interview_talk_track.md`，把 case study 压缩成面试现场话术。
-- 文档包含 15 秒、30 秒、60 秒和 3 分钟版本。
-- 文档整理了数据泄漏、随机切分、transactions、递归预测、RMSLE、失败实验、LightGBM 选择和项目局限等高频追问。
+- 已将沟通提纲作为本地私有材料保存，不作为公开仓库文档展示。
+- 文档包含不同长度的项目摘要版本。
+- 文档整理了数据泄漏、随机切分、transactions、递归预测、RMSLE、失败实验、LightGBM 选择和项目局限等常见问题。
 - 文档单独区分数据分析岗位版本和数据科学岗位版本。
-- README 已加入面试讲述稿入口。
+- 公开 README 不展示私有备考材料入口。
 
 阶段 14 作品集化文档导航与 CI 初版已完成：
 
-- 新增 `docs/index.md`，把 README、结果总结、case study、复现、验证协议、学习记录、报告和面试材料分层整理。
+- 新增 `docs/index.md`，把 README、结果总结、case study、复现、验证协议、学习记录、报告和公开展示材料分层整理。
 - 新增 `.github/workflows/tests.yml`，在 push / pull request 到 `main` 时运行 `python -m pytest -q`。
 - README 增加文档导航入口、CI 说明和工程检查说明。
 - 当前 CI 只覆盖 11 个轻量 sanity checks，不依赖 Kaggle 全量数据。
 
-一周作品集化收尾已完成。下一步可以根据具体岗位 JD 定制更短讲稿，或继续做模型稳定性优化。
+一周作品集化收尾已完成。下一步可以在本地根据具体岗位 JD 定制更短沟通提纲，或继续做模型稳定性优化。

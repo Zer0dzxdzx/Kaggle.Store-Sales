@@ -7,6 +7,7 @@ __pycache__/
 
 artifacts/
 data/raw/
+private_notes/
 
 !data/raw/.gitkeep
 !artifacts/.gitkeep

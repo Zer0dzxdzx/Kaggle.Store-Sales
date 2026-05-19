@@ -239,19 +239,18 @@ LightGBM 的价值不只是 mean RMSLE 略好，更重要的是把 worst fold �
 - 测试还只是轻量 sanity checks，没有 CI 和完整端到端测试。
 - LightGBM 仍存在 fold / family / promotion slice 的稳定性风险。
 
-## 12. 面试讲述版本
+## 12. 对外项目摘要
 
-如果面试官问“这个项目你做了什么”，可以这样讲：
+这个项目可以概括为一个可复现的零售需求预测 workflow：
 
-> 我做的是 Kaggle Store Sales 的门店-品类销量预测。这个项目我没有只当成跑模型比赛，而是按完整数据科学流程做：先理解多张表的业务含义，区分哪些信息预测未来时已知，哪些会造成泄漏；然后做 EDA，看销量分布、促销、零销量、门店和时间周期；接着建立时间序列验证，用过去预测未来，不用随机切分。
->
-> 建模上，我先做 HistGBDT baseline，再通过误差分析发现某些 family 和 fold 不稳定。中间有一个很典型的失败实验：针对 `SCHOOL AND OFFICE SUPPLIES` 加特征后，本地分数变好，但 Kaggle public score 变差。这让我意识到不能只看平均验证分数，所以后面补了 August/pre-test 验证窗口、stability slice 和 submission gate。
->
-> 最后我对比了 HistGBDT、LightGBM、ridge、seasonal naive 和 blending。当前最好方案是 LightGBM baseline，Kaggle public RMSLE 从 `0.58410` 提升到 `0.50834`。这个项目最大的收获不是单个分数，而是学会了怎么防止时间序列泄漏、怎么做分组误差诊断，以及怎么把一个模型结果变成可复现、可解释的项目。
+- 问题定义：预测 `date + store_nbr + family` 粒度下未来 16 天销量，评价指标为 RMSLE。
+- 数据处理：整合销量、门店、促销、节假日、油价和历史交易量等多表信息，并区分预测时已知字段和高风险泄漏字段。
+- 验证设计：使用时间序列窗口和递归预测模拟真实提交场景，不使用随机切分。
+- 诊断方法：不仅看 mean RMSLE，还按 family、store、promotion bin、fold 和 test-like slices 拆解误差。
+- 实验结论：`lightgbm_baseline` 是当前 best submission，Kaggle public score 从原始 HistGBDT baseline 的 `0.58410` 提升到 `0.50834`。
+- 项目边界：当前结果适合作为可解释、可复现的数据科学项目，但仍存在 fold / family / promotion stability 风险，不应包装成竞赛最终最优解。
 
-如果只讲 30 秒，可以压缩成：
-
-> 这个项目是做门店-品类未来 16 天销量预测。我重点做了多表清洗关联、EDA、时间序列验证、特征工程和误差拆解。为了避免数据泄漏，我不用随机切分，而是用过去窗口预测未来，并且递归生成 lag 特征。最后对比 HistGBDT 和 LightGBM 等模型，把 public RMSLE 从 `0.58410` 提升到 `0.50834`。中间还记录了一个本地分数变好但线上变差的失败实验，用它建立了后续的验证和 submission gate。
+面试讲稿、岗位定制回答和更口语化的追问准备保存在本地私有材料中，不放入公开仓库。
 
 ## 13. 证据入口
 

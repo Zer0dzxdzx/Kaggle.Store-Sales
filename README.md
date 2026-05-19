@@ -138,15 +138,13 @@ PYTHONPATH=src python3 -m store_sales.cli run \
 
 ## 关键文档
 
-### 面向作品集和面试
+### 面向作品集
 
 - [文档导航](docs/index.md)
 - [最终结果总结](docs/final_result_summary.md)
 - [项目总结](docs/resume_project_summary.md)
 - [项目案例复盘](docs/case_study.md)
-- [面试讲述稿](docs/interview_talk_track.md)
 - [可复现性说明](docs/reproducibility.md)
-- [简历深挖与面试准备](docs/interview_deep_dive.md)
 - [进阶升级路线图](docs/advanced_roadmap.md)
 
 ### 面向验证和提交决策
@@ -189,7 +187,7 @@ PYTHONPATH=src python3 -m store_sales.cli run \
 ├── .github/
 │   └── workflows/tests.yml     # GitHub Actions 轻量测试
 ├── artifacts/                  # 训练、验证、submission 输出，gitignored
-├── docs/                       # 项目说明、学习记录、验证协议和面试文档
+├── docs/                       # 项目说明、学习记录、验证协议和公开总结
 ├── reports/                    # EDA、误差分析、验证、消融和调参报告
 ├── src/
 │   └── store_sales/
@@ -295,4 +293,4 @@ python3 -m pytest -q
 
 1. 继续围绕 fold / family / promotion stability 优化模型，而不是盲目追 public score。
 2. 补充更重的端到端 smoke test，在小样本或缓存数据上跑完整 CLI。
-3. 面试前根据具体岗位 JD 精简 [面试讲述稿](docs/interview_talk_track.md)。
+3. 根据具体岗位 JD 准备本地私有沟通提纲，相关备考材料不放入公开仓库。
