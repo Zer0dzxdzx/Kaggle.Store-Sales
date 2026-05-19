@@ -1,6 +1,29 @@
 # Kaggle Store Sales Forecasting
 
-这是一个面向 Kaggle `Store Sales - Time Series Forecasting` 比赛的零售需求预测项目。项目目标不是只提交一次结果，而是构建一个可复现、可解释、可迭代的数据科学 workflow：从多表数据理解、特征工程、时间序列验证，到误差诊断、模型对比和 submission 决策。
+这是一个面向 Kaggle [`Store Sales - Time Series Forecasting`](https://www.kaggle.com/competitions/store-sales-time-series-forecasting) 比赛的零售需求预测项目。项目目标不是只提交一次结果，而是构建一个可复现、可解释、可迭代的数据科学 workflow：从多表数据理解、特征工程、时间序列验证，到误差诊断、模型对比和 submission 决策。
+
+## 5 分钟读懂项目
+
+| 如果你想看 | 推荐入口 | 你会看到什么 |
+| --- | --- | --- |
+| 30 秒了解项目 | 本 README 的项目快照和结果摘要 | 任务、数据粒度、当前 best score、验证方式 |
+| 3 到 5 分钟看完整故事 | [项目案例复盘](docs/case_study.md) | 问题、数据、EDA、失败实验、模型对比和结论 |
+| 核对最终结果 | [最终结果总结](docs/final_result_summary.md) | champion model、public score、失败方案和残余风险 |
+| 复现实验 | [可复现性说明](docs/reproducibility.md) | 数据放置、安装命令、主验证和 submission 生成 |
+| 审查验证是否合理 | [验证协议](docs/validation_protocol.md) 和 [Submission gate](docs/submission_gate.md) | 如何避免时间序列泄漏，以及什么方案值得提交 |
+
+## 项目流程
+
+```mermaid
+flowchart LR
+    A["Kaggle raw CSVs"] --> B["Data reading and table joins"]
+    B --> C["Feature engineering"]
+    C --> D["Time-based validation"]
+    D --> E["Error analysis and stability slices"]
+    E --> F["Model comparison"]
+    F --> G["Submission gate"]
+    G --> H["Kaggle submission"]
+```
 
 ## 项目快照
 
@@ -13,6 +36,17 @@
 | 原始 HistGBDT baseline public score | `0.58410` |
 | 当前主验证协议 | `August / pre-test explicit windows + recursive forecasting + stability checks` |
 | 当前项目定位 | 核心建模 workflow 与作品集化收尾已完成，后续进入稳定性优化 |
+
+## 项目亮点
+
+| 能力点 | 项目证据 |
+| --- | --- |
+| 数据理解 | 梳理 `train/test/stores/oil/holidays_events/transactions` 的业务含义和可用边界 |
+| 防泄漏意识 | 不随机切分；`transactions` 只做历史聚合；销量 lag 和 rolling features 只使用过去信息 |
+| 验证设计 | 使用多窗口时间序列验证、explicit August / pre-test windows 和递归预测 |
+| 误差诊断 | 按 family、store、promotion bin、fold 和 test-like slices 拆解风险 |
+| 实验判断 | 记录本地变好但 public 变差的失败实验，并据此建立 submission gate |
+| 工程化 | 提供 CLI、文档导航、复现说明、实验日志、pytest sanity checks 和 GitHub Actions CI |
 
 ## 这个项目展示了什么
 
@@ -93,6 +127,12 @@ data/raw/sample_submission.csv
 - `items.csv`：当前主 pipeline 不依赖它。
 
 `data/raw/` 不提交到 Git，避免上传比赛原始数据。
+
+数据说明：
+
+- Kaggle 原始数据不随仓库分发，需要用户自行从比赛页面下载。
+- `artifacts/` 和 `private_notes/` 只保留在本地，不进入公开仓库。
+- `reports/` 中保留的是项目分析报告和聚合/派生结果，用于展示 EDA、误差诊断和模型对比过程；不包含 Kaggle 原始逐行数据，使用者仍需遵守 Kaggle competition/data terms。
 
 ### 3. 跑一个基础 pipeline
 
